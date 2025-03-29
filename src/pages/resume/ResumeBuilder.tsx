@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, useParams, Link } from "react-router-dom";
@@ -60,7 +61,7 @@ export default function ResumeBuilder() {
     value: string | boolean
   ) => {
     setFormData(prev => {
-      const sectionData = [...prev[section]] as any[];
+      const sectionData = [...(prev[section] as any[])] as any[];
       sectionData[index] = { ...sectionData[index], [field]: value };
       return { ...prev, [section]: sectionData };
     });
@@ -75,7 +76,8 @@ export default function ResumeBuilder() {
   
   const addSectionItem = (section: keyof Omit<ResumeFormData, 'personalInfo'>) => {
     setFormData(prev => {
-      const emptyItem = { ...prev[section][0] };
+      const sectionArray = prev[section] as any[];
+      const emptyItem = { ...sectionArray[0] };
       Object.keys(emptyItem).forEach(key => {
         if (typeof emptyItem[key as keyof typeof emptyItem] === 'string') {
           (emptyItem as any)[key] = '';
@@ -88,14 +90,15 @@ export default function ResumeBuilder() {
       
       return {
         ...prev,
-        [section]: [...prev[section], emptyItem]
+        [section]: [...sectionArray, emptyItem]
       };
     });
   };
   
   const removeSectionItem = (section: keyof Omit<ResumeFormData, 'personalInfo'>, index: number) => {
-    if (index === 0 && formData[section].length === 1) {
-      const emptyItem = { ...formData[section][0] };
+    if (index === 0 && (formData[section] as any[]).length === 1) {
+      const sectionArray = formData[section] as any[];
+      const emptyItem = { ...sectionArray[0] };
       Object.keys(emptyItem).forEach(key => {
         if (typeof emptyItem[key as keyof typeof emptyItem] === 'string') {
           (emptyItem as any)[key] = '';
@@ -116,7 +119,7 @@ export default function ResumeBuilder() {
     
     setFormData(prev => ({
       ...prev,
-      [section]: prev[section].filter((_, i) => i !== index)
+      [section]: (prev[section] as any[]).filter((_, i) => i !== index)
     }));
   };
   
@@ -210,8 +213,6 @@ export default function ResumeBuilder() {
     setLoading(true);
     
     try {
-      const { generateResumePDF } = await import('@/utils/pdfGenerator');
-      
       const pdfBlob = await generateResumePDF(templateId || "", formData);
       
       const url = window.URL.createObjectURL(pdfBlob);
