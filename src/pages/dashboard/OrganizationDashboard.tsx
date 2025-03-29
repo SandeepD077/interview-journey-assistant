@@ -6,11 +6,24 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
-import { Users, BarChart, Settings, ChevronRight, PlusCircle } from "lucide-react";
+import { Users, BarChart, Settings, ChevronRight, PlusCircle, Download, FileText } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function OrganizationDashboard() {
   const { currentUser } = useAuth();
+  const [showAddPositionDialog, setShowAddPositionDialog] = useState(false);
+  const [newPosition, setNewPosition] = useState({
+    title: "",
+    department: "",
+    location: "",
+    type: "fulltime"
+  });
   
   // Redirect if no user or wrong user type
   if (!currentUser) {
@@ -20,6 +33,85 @@ export default function OrganizationDashboard() {
   if (currentUser.role !== "organization") {
     return <Navigate to="/dashboard" replace />;
   }
+
+  const handleAddPosition = () => {
+    // In a real application, we would call an API to add the position
+    toast.success(`New position '${newPosition.title}' added successfully!`);
+    setShowAddPositionDialog(false);
+    setNewPosition({
+      title: "",
+      department: "",
+      location: "",
+      type: "fulltime"
+    });
+  };
+
+  const downloadResume = (candidateName: string) => {
+    // Simulate file download
+    toast.success(`Downloading ${candidateName}'s resume...`);
+    
+    // Create a temporary link element
+    setTimeout(() => {
+      // In a real app, we would get the file URL from the server
+      // For now, we'll create a simple text file with some dummy content
+      const resumeContent = `
+Sample Resume for ${candidateName}
+---------------------------------------------------
+Contact: sample@email.com
+Phone: (555) 123-4567
+---------------------------------------------------
+Experience:
+- Senior Developer at Tech Corp (2018-Present)
+- Junior Developer at StartupXYZ (2015-2018)
+---------------------------------------------------
+Education:
+- BS in Computer Science, University College (2015)
+      `;
+      
+      const blob = new Blob([resumeContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      link.href = url;
+      link.download = `${candidateName.replace(/\s+/g, '_')}_Resume.txt`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    }, 1000);
+  };
+
+  const generateReport = () => {
+    toast.success("Generating analytics report...");
+    
+    setTimeout(() => {
+      // Create a simple CSV report
+      const reportContent = `
+Date,Candidates Applied,Interviews Scheduled,Offers Extended,Offers Accepted
+2023-01,15,8,3,2
+2023-02,22,12,5,4
+2023-03,18,10,4,3
+2023-04,25,15,6,5
+2023-05,30,18,8,6
+2023-06,28,16,7,5
+      `;
+      
+      const blob = new Blob([reportContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      link.href = url;
+      link.download = 'Recruitment_Analytics_Report.csv';
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    }, 1000);
+  };
 
   return (
     <DashboardLayout>
@@ -32,10 +124,72 @@ export default function OrganizationDashboard() {
             </p>
           </div>
           <div className="mt-4 md:mt-0">
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add New Position
-            </Button>
+            <Dialog open={showAddPositionDialog} onOpenChange={setShowAddPositionDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add New Position
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Position</DialogTitle>
+                  <DialogDescription>
+                    Create a new job position to start recruiting candidates.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Job Title</Label>
+                    <Input 
+                      id="title" 
+                      value={newPosition.title}
+                      onChange={(e) => setNewPosition({...newPosition, title: e.target.value})}
+                      placeholder="e.g. Frontend Developer" 
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="department">Department</Label>
+                    <Input 
+                      id="department" 
+                      value={newPosition.department}
+                      onChange={(e) => setNewPosition({...newPosition, department: e.target.value})}
+                      placeholder="e.g. Engineering" 
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input 
+                      id="location" 
+                      value={newPosition.location}
+                      onChange={(e) => setNewPosition({...newPosition, location: e.target.value})}
+                      placeholder="e.g. Remote, New York, NY" 
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="type">Employment Type</Label>
+                    <Select 
+                      value={newPosition.type}
+                      onValueChange={(value) => setNewPosition({...newPosition, type: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employment type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="fulltime">Full-time</SelectItem>
+                        <SelectItem value="parttime">Part-time</SelectItem>
+                        <SelectItem value="contract">Contract</SelectItem>
+                        <SelectItem value="internship">Internship</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowAddPositionDialog(false)}>Cancel</Button>
+                  <Button onClick={handleAddPosition} disabled={!newPosition.title}>Add Position</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -113,8 +267,17 @@ export default function OrganizationDashboard() {
                     <div className="hidden sm:block">
                       <div className="text-sm">Applied 2 days ago</div>
                     </div>
-                    <div className="mt-2 sm:mt-0 sm:ml-4">
+                    <div className="mt-2 sm:mt-0 sm:ml-4 flex space-x-2">
                       <Button variant="outline" size="sm">View Profile</Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex items-center" 
+                        onClick={() => downloadResume("Alex Johnson")}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Resume
+                      </Button>
                     </div>
                   </div>
                   
@@ -131,8 +294,17 @@ export default function OrganizationDashboard() {
                     <div className="hidden sm:block">
                       <div className="text-sm">Applied 5 days ago</div>
                     </div>
-                    <div className="mt-2 sm:mt-0 sm:ml-4">
+                    <div className="mt-2 sm:mt-0 sm:ml-4 flex space-x-2">
                       <Button variant="outline" size="sm">View Profile</Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex items-center" 
+                        onClick={() => downloadResume("Sarah Miller")}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Resume
+                      </Button>
                     </div>
                   </div>
                   
@@ -149,8 +321,17 @@ export default function OrganizationDashboard() {
                     <div className="hidden sm:block">
                       <div className="text-sm">Applied 1 day ago</div>
                     </div>
-                    <div className="mt-2 sm:mt-0 sm:ml-4">
+                    <div className="mt-2 sm:mt-0 sm:ml-4 flex space-x-2">
                       <Button variant="outline" size="sm">View Profile</Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex items-center" 
+                        onClick={() => downloadResume("David Chen")}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Resume
+                      </Button>
                     </div>
                   </div>
                   
@@ -167,8 +348,17 @@ export default function OrganizationDashboard() {
                     <div className="hidden sm:block">
                       <div className="text-sm">Applied 3 days ago</div>
                     </div>
-                    <div className="mt-2 sm:mt-0 sm:ml-4">
+                    <div className="mt-2 sm:mt-0 sm:ml-4 flex space-x-2">
                       <Button variant="outline" size="sm">View Profile</Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex items-center" 
+                        onClick={() => downloadResume("Emma Wilson")}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Resume
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -207,6 +397,68 @@ export default function OrganizationDashboard() {
               </Button>
             </Link>
           </CardFooter>
+        </Card>
+
+        {/* Analytics Card */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Recruitment Analytics</CardTitle>
+                <CardDescription>Performance metrics for your hiring pipeline</CardDescription>
+              </div>
+              <Button onClick={generateReport} variant="outline" size="sm" className="flex items-center">
+                <Download className="h-4 w-4 mr-2" />
+                Export Report
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium">Application to Interview Rate</span>
+                  <span className="text-sm font-medium">60%</span>
+                </div>
+                <Progress value={60} className="h-2" />
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium">Interview to Offer Rate</span>
+                  <span className="text-sm font-medium">45%</span>
+                </div>
+                <Progress value={45} className="h-2" />
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium">Offer Acceptance Rate</span>
+                  <span className="text-sm font-medium">78%</span>
+                </div>
+                <Progress value={78} className="h-2" />
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500">Avg. Time to Hire</p>
+                  <p className="text-2xl font-bold">18 days</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500">Open Requisitions</p>
+                  <p className="text-2xl font-bold">8</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500">Cost Per Hire</p>
+                  <p className="text-2xl font-bold">$2,450</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500">Quality of Hire</p>
+                  <p className="text-2xl font-bold">85%</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
         </Card>
 
         {/* Quick Actions */}

@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, useParams, Link } from "react-router-dom";
@@ -24,6 +23,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { generateResumePDF } from "@/utils/pdfGenerator";
 
 export default function ResumeBuilder() {
   const { currentUser } = useAuth();
@@ -38,10 +38,8 @@ export default function ResumeBuilder() {
     analysis: string;
   } | null>(null);
   
-  // Find the selected template
   const selectedTemplate = resumeTemplates.find(t => t.id === templateId);
   
-  // Redirect if no user or wrong user type
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
@@ -50,7 +48,6 @@ export default function ResumeBuilder() {
     return <Navigate to="/organization-dashboard" replace />;
   }
   
-  // Redirect if invalid template ID
   if (!selectedTemplate) {
     return <Navigate to="/resume-builder" replace />;
   }
@@ -63,13 +60,12 @@ export default function ResumeBuilder() {
     value: string | boolean
   ) => {
     setFormData(prev => {
-      const sectionData = [...prev[section]];
+      const sectionData = [...prev[section]] as any[];
       sectionData[index] = { ...sectionData[index], [field]: value };
       return { ...prev, [section]: sectionData };
     });
   };
   
-  // Update personal info section
   const updatePersonalInfo = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -77,11 +73,9 @@ export default function ResumeBuilder() {
     }));
   };
   
-  // Add a new item to a section
   const addSectionItem = (section: keyof Omit<ResumeFormData, 'personalInfo'>) => {
     setFormData(prev => {
       const emptyItem = { ...prev[section][0] };
-      // Reset all fields to empty strings
       Object.keys(emptyItem).forEach(key => {
         if (typeof emptyItem[key as keyof typeof emptyItem] === 'string') {
           (emptyItem as any)[key] = '';
@@ -99,10 +93,8 @@ export default function ResumeBuilder() {
     });
   };
   
-  // Remove an item from a section
   const removeSectionItem = (section: keyof Omit<ResumeFormData, 'personalInfo'>, index: number) => {
     if (index === 0 && formData[section].length === 1) {
-      // Don't remove the last item, just clear it
       const emptyItem = { ...formData[section][0] };
       Object.keys(emptyItem).forEach(key => {
         if (typeof emptyItem[key as keyof typeof emptyItem] === 'string') {
@@ -128,7 +120,6 @@ export default function ResumeBuilder() {
     }));
   };
   
-  // Update a skill in the skills array
   const updateSkill = (index: number, value: string) => {
     setFormData(prev => {
       const skills = [...prev.skills];
@@ -137,7 +128,6 @@ export default function ResumeBuilder() {
     });
   };
   
-  // Add a new empty skill
   const addSkill = () => {
     setFormData(prev => ({
       ...prev,
@@ -145,10 +135,8 @@ export default function ResumeBuilder() {
     }));
   };
   
-  // Remove a skill
   const removeSkill = (index: number) => {
     if (index === 0 && formData.skills.length === 1) {
-      // Don't remove the last skill, just clear it
       setFormData(prev => ({
         ...prev,
         skills: [""]
@@ -162,7 +150,6 @@ export default function ResumeBuilder() {
     }));
   };
   
-  // Update a technology in a project
   const updateTechnology = (projectIndex: number, techIndex: number, value: string) => {
     setFormData(prev => {
       const projects = [...prev.projects];
@@ -173,7 +160,6 @@ export default function ResumeBuilder() {
     });
   };
   
-  // Add a new technology to a project
   const addTechnology = (projectIndex: number) => {
     setFormData(prev => {
       const projects = [...prev.projects];
@@ -185,10 +171,8 @@ export default function ResumeBuilder() {
     });
   };
   
-  // Remove a technology from a project
   const removeTechnology = (projectIndex: number, techIndex: number) => {
     if (techIndex === 0 && formData.projects[projectIndex].technologies.length === 1) {
-      // Don't remove the last technology, just clear it
       setFormData(prev => {
         const projects = [...prev.projects];
         projects[projectIndex] = { 
@@ -208,11 +192,9 @@ export default function ResumeBuilder() {
     });
   };
   
-  // Save the resume
   const saveResume = () => {
     setIsSaving(true);
     
-    // Simulate save operation
     setTimeout(() => {
       localStorage.setItem('savedResume', JSON.stringify({
         templateId,
@@ -224,23 +206,37 @@ export default function ResumeBuilder() {
     }, 1000);
   };
   
-  // Generate PDF
-  const generatePDF = () => {
+  const generatePDF = async () => {
     setLoading(true);
     
-    // Simulate PDF generation
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const { generateResumePDF } = await import('@/utils/pdfGenerator');
+      
+      const pdfBlob = await generateResumePDF(templateId || "", formData);
+      
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${formData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.txt`;
+      document.body.appendChild(link);
+      link.click();
+      
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+      
       toast.success("Resume PDF generated successfully! Check your downloads folder.");
-    }, 2000);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  // Analyze resume with Gemini
+  
   const analyzeResumeWithAI = async () => {
     setIsAnalyzing(true);
     
     try {
-      // Convert the form data to a text representation
       const resumeText = `
 Full Name: ${formData.personalInfo.fullName}
 Email: ${formData.personalInfo.email}
@@ -297,7 +293,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
     }
   };
   
-  // Load saved resume if exists
   useEffect(() => {
     const savedResume = localStorage.getItem('savedResume');
     if (savedResume) {
@@ -356,7 +351,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Resume Form */}
           <div className="col-span-2">
             <Card>
               <CardHeader>
@@ -376,7 +370,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                     <TabsTrigger value="certifications">Certifications</TabsTrigger>
                   </TabsList>
                   
-                  {/* Personal Info Tab */}
                   <TabsContent value="personal" className="pt-4">
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -472,7 +465,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                     </div>
                   </TabsContent>
                   
-                  {/* Education Tab */}
                   <TabsContent value="education" className="pt-4">
                     <div className="space-y-6">
                       {formData.education.map((edu, index) => (
@@ -580,7 +572,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                     </div>
                   </TabsContent>
                   
-                  {/* Experience Tab */}
                   <TabsContent value="experience" className="pt-4">
                     <div className="space-y-6">
                       {formData.experience.map((exp, index) => (
@@ -698,7 +689,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                     </div>
                   </TabsContent>
                   
-                  {/* Skills Tab */}
                   <TabsContent value="skills" className="pt-4">
                     <div className="space-y-4">
                       <div className="space-y-2">
@@ -739,7 +729,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                     </div>
                   </TabsContent>
                   
-                  {/* Projects Tab */}
                   <TabsContent value="projects" className="pt-4">
                     <div className="space-y-6">
                       {formData.projects.map((project, index) => (
@@ -836,7 +825,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                     </div>
                   </TabsContent>
                   
-                  {/* Certifications Tab */}
                   <TabsContent value="certifications" className="pt-4">
                     <div className="space-y-6">
                       {formData.certifications.map((cert, index) => (
@@ -938,10 +926,8 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
             </Card>
           </div>
           
-          {/* Resume Preview & AI Analysis */}
           <div className="col-span-1">
             <div className="space-y-6">
-              {/* Resume Preview */}
               <Card>
                 <CardHeader>
                   <CardTitle>Resume Preview</CardTitle>
@@ -972,7 +958,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                       )}
                       
                       <div className="p-4 flex-1">
-                        {/* Placeholder content */}
                         <div className="space-y-4">
                           {!formData.personalInfo.fullName && (
                             <>
@@ -1039,7 +1024,6 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                 </CardContent>
               </Card>
               
-              {/* AI Analysis */}
               <Card>
                 <CardHeader>
                   <CardTitle>AI Resume Assistant</CardTitle>

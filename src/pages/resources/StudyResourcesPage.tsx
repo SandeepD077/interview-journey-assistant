@@ -1,99 +1,104 @@
 
-import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Heading } from "@/components/ui/heading";
-import { SectionContainer } from "@/components/ui/section-container";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { studyResources } from "@/data/studyResources";
+import { ExternalLink, BookOpen, Video, FileText, Code } from "lucide-react";
 
 export default function StudyResourcesPage() {
-  const [activeTab, setActiveTab] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const { currentUser } = useAuth();
   
-  const categories = [
-    { id: "all", name: "All Resources" },
-    { id: "algorithms", name: "Algorithms" },
-    { id: "dataStructures", name: "Data Structures" },
-    { id: "systemDesign", name: "System Design" },
-    { id: "behavioral", name: "Behavioral" }
-  ];
+  // Redirect if no user
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
   
-  const filteredResources = studyResources.filter(resource => {
-    const matchesCategory = activeTab === "all" || resource.category === activeTab;
-    const matchesSearch = 
-      resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      resource.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesCategory && matchesSearch;
-  });
+  if (currentUser.role !== "user") {
+    return <Navigate to="/organization-dashboard" replace />;
+  }
+  
+  // Group resources by category
+  const resourcesByCategory = studyResources.reduce((acc, resource) => {
+    if (!acc[resource.category]) {
+      acc[resource.category] = [];
+    }
+    acc[resource.category].push(resource);
+    return acc;
+  }, {} as Record<string, typeof studyResources>);
+  
+  const categories = Object.keys(resourcesByCategory);
+
+  const getIconForResourceType = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'video':
+        return <Video className="h-5 w-5" />;
+      case 'article':
+        return <FileText className="h-5 w-5" />;
+      case 'documentation':
+        return <BookOpen className="h-5 w-5" />;
+      case 'interactive':
+        return <Code className="h-5 w-5" />;
+      default:
+        return <FileText className="h-5 w-5" />;
+    }
+  };
 
   return (
     <DashboardLayout>
-      <Heading 
-        title="Study Resources" 
-        description="Curated learning materials to help you prepare for your interviews"
-      />
-      
-      <SectionContainer className="space-y-6">
-        <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:space-y-0">
-          <Tabs 
-            defaultValue="all" 
-            value={activeTab} 
-            onValueChange={setActiveTab}
-            className="w-full md:w-auto"
-          >
-            <TabsList className="grid grid-cols-3 md:grid-cols-5">
-              {categories.map(category => (
-                <TabsTrigger key={category.id} value={category.id}>
-                  {category.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          
-          <div className="w-full md:w-64">
-            <Input
-              placeholder="Search resources..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Study Resources</h1>
+          <p className="text-muted-foreground">
+            Curated learning materials to help you prepare for interviews and improve your skills
+          </p>
         </div>
         
-        {filteredResources.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredResources.map((resource) => (
-              <Card key={resource.id} className="h-full flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-lg">{resource.title}</CardTitle>
-                  <CardDescription>{resource.source}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {resource.description}
-                  </p>
-                  <a 
-                    href={resource.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-primary hover:underline text-sm font-medium"
-                  >
-                    View Resource
-                    <ExternalLink className="ml-1 h-3 w-3" />
-                  </a>
-                </CardContent>
-              </Card>
+        <Tabs defaultValue={categories[0]} className="w-full">
+          <TabsList className="w-full flex-wrap justify-start">
+            {categories.map((category) => (
+              <TabsTrigger key={category} value={category}>
+                {category}
+              </TabsTrigger>
             ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No resources found. Try adjusting your search criteria.</p>
-          </div>
-        )}
-      </SectionContainer>
+          </TabsList>
+          
+          {categories.map((category) => (
+            <TabsContent key={category} value={category} className="space-y-4">
+              {resourcesByCategory[category].map((resource) => (
+                <Card key={resource.id}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="flex items-center">
+                          {getIconForResourceType(resource.type)}
+                          <span className="ml-2">{resource.title}</span>
+                        </CardTitle>
+                        <CardDescription>{resource.description}</CardDescription>
+                      </div>
+                      <Badge>{resource.type}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm mb-4">{resource.description}</p>
+                    <div className="flex items-center space-x-2">
+                      <Button asChild variant="outline" size="sm">
+                        <a href={resource.link} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Visit Resource
+                        </a>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
     </DashboardLayout>
   );
 }
