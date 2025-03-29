@@ -17,10 +17,12 @@ import ResumeBuilder from "./pages/resume/ResumeBuilder";
 import ResumeTemplateSelection from "./pages/resume/ResumeTemplateSelection";
 import AptitudeTestPage from "./pages/practice/AptitudeTestPage";
 import DSAPracticePage from "./pages/practice/DSAPracticePage";
-import MockInterviewPage from "./pages/practice/MockInterviewPage";
-import StudyResourcesPage from "./pages/resources/StudyResourcesPage";
 import ProfilePage from "./pages/user/ProfilePage";
 import NotFound from "./pages/NotFound";
+
+// Create the mock interview page and study resources page
+import MockInterviewPage from "./pages/practice/MockInterviewPage";
+import StudyResourcesPage from "./pages/resources/StudyResourcesPage";
 
 const queryClient = new QueryClient();
 

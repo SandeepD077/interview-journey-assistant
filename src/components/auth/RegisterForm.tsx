@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -71,10 +70,13 @@ export function RegisterForm() {
     try {
       const { confirmPassword, ...registerData } = data;
       
-      const success = await register({
+      const userData = {
         ...registerData,
         role: userType,
-      });
+        password: data.password,
+      };
+      
+      const success = await register(userData);
 
       if (success) {
         navigate(userType === "user" ? "/dashboard" : "/organization-dashboard");
