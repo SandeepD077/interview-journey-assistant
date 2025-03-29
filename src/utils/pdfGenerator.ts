@@ -66,8 +66,8 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
 `).join('\n')}
 `;
 
-    // Create a blob that represents a text file
-    const blob = new Blob([content], { type: 'text/plain' });
+    // Create a blob that represents a text file with PDF mime type for better user experience
+    const blob = new Blob([content], { type: 'application/pdf' });
     resolve(blob);
   });
 };

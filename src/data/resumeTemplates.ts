@@ -11,19 +11,19 @@ export const resumeTemplates: ResumeTemplate[] = [
     id: "modern",
     name: "Modern",
     description: "A clean, contemporary design with a sidebar for contact information",
-    previewImage: "https://images.unsplash.com/photo-1574976557737-426285a952e5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+    previewImage: "/resume-templates/modern-template.png"
   },
   {
     id: "professional",
     name: "Professional",
     description: "A traditional layout focused on experience and achievements",
-    previewImage: "https://images.unsplash.com/photo-1574976557743-ef9d3f5f3f99?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+    previewImage: "/resume-templates/professional-template.png"
   },
   {
     id: "creative",
     name: "Creative",
     description: "A bold design that showcases creativity and personality",
-    previewImage: "https://images.unsplash.com/photo-1574976557425-60609bd0a144?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+    previewImage: "/resume-templates/creative-template.png"
   }
 ];
 

@@ -24,6 +24,11 @@ import NotFound from "./pages/NotFound";
 import MockInterviewPage from "./pages/practice/MockInterviewPage";
 import StudyResourcesPage from "./pages/resources/StudyResourcesPage";
 
+// Organization related pages
+import CandidatesPage from "./pages/organization/CandidatesPage";
+import AnalyticsPage from "./pages/organization/AnalyticsPage";
+import SettingsPage from "./pages/organization/SettingsPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -52,6 +57,9 @@ const App = () => (
             
             {/* Organization routes */}
             <Route path="/organization-dashboard" element={<OrganizationDashboard />} />
+            <Route path="/candidates" element={<CandidatesPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             
             {/* Catch all */}
             <Route path="*" element={<NotFound />} />
