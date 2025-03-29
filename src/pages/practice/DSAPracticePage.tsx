@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, useSearchParams } from "react-router-dom";
@@ -64,13 +63,9 @@ export default function DSAPracticePage() {
         question.description.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
       
-    const matchesDifficulty = difficultyFilter 
-      ? question.difficulty === difficultyFilter 
-      : true;
-      
-    const matchesCategory = categoryFilter 
-      ? question.category === categoryFilter 
-      : true;
+    // Updated filter logic to handle "all" value
+    const matchesDifficulty = !difficultyFilter || difficultyFilter === "all" || question.difficulty === difficultyFilter;
+    const matchesCategory = !categoryFilter || categoryFilter === "all" || question.category === categoryFilter;
     
     return matchesSearch && matchesDifficulty && matchesCategory;
   });
@@ -224,24 +219,30 @@ export default function DSAPracticePage() {
             />
           </div>
           
-          <Select value={difficultyFilter || ""} onValueChange={(value) => setDifficultyFilter(value || null)}>
+          <Select 
+            value={difficultyFilter || "all"} 
+            onValueChange={(value) => setDifficultyFilter(value !== "all" ? value : null)}
+          >
             <SelectTrigger className="w-full md:w-[180px]">
               <SelectValue placeholder="Difficulty" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Difficulties</SelectItem>
+              <SelectItem value="all">All Difficulties</SelectItem>
               <SelectItem value="Easy">Easy</SelectItem>
               <SelectItem value="Medium">Medium</SelectItem>
               <SelectItem value="Hard">Hard</SelectItem>
             </SelectContent>
           </Select>
           
-          <Select value={categoryFilter || ""} onValueChange={(value) => setCategoryFilter(value || null)}>
+          <Select 
+            value={categoryFilter || "all"} 
+            onValueChange={(value) => setCategoryFilter(value !== "all" ? value : null)}
+          >
             <SelectTrigger className="w-full md:w-[180px]">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>{category}</SelectItem>
               ))}
