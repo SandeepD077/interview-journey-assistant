@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link, useSearchParams } from "react-router-dom";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { aptitudeTests, Question, AptitudeTest } from "@/data/aptitudeQuestions";
+import { aptitudeTests, Question, AptitudeTest, getRandomQuestions } from "@/data/aptitudeQuestions";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Timer, Clock, ChevronLeft, ChevronRight, CheckCircle, RefreshCw, Loader2 } from "lucide-react";
@@ -16,6 +15,7 @@ export default function AptitudeTestPage() {
   const { currentUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTest, setSelectedTest] = useState<AptitudeTest | null>(null);
+  const [testQuestions, setTestQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: string]: string }>({});
   const [timeLeft, setTimeLeft] = useState(0);
@@ -45,6 +45,9 @@ export default function AptitudeTestPage() {
       const test = aptitudeTests.find(t => t.id === testId);
       if (test) {
         setSelectedTest(test);
+        // Get 5 random questions from the test's question pool
+        const randomQuestions = getRandomQuestions(test.questions, 5);
+        setTestQuestions(randomQuestions);
       }
     }
   }, [searchParams]);
@@ -78,6 +81,9 @@ export default function AptitudeTestPage() {
   const selectTest = (test: AptitudeTest) => {
     setSelectedTest(test);
     setSearchParams({ test: test.id });
+    // Get 5 random questions from the test's question pool
+    const randomQuestions = getRandomQuestions(test.questions, 5);
+    setTestQuestions(randomQuestions);
     setSelectedAnswers({});
     setCurrentQuestion(0);
     setTestFinished(false);
@@ -97,7 +103,7 @@ export default function AptitudeTestPage() {
   };
 
   const goToNextQuestion = () => {
-    if (selectedTest && currentQuestion < selectedTest.questions.length - 1) {
+    if (testQuestions && currentQuestion < testQuestions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     }
   };
@@ -109,7 +115,7 @@ export default function AptitudeTestPage() {
   };
 
   const finishTest = () => {
-    if (!selectedTest) return;
+    if (!selectedTest || !testQuestions.length) return;
     
     setLoadingResult(true);
     
@@ -117,19 +123,19 @@ export default function AptitudeTestPage() {
     setTimeout(() => {
       let correctAnswers = 0;
       
-      selectedTest.questions.forEach(question => {
+      testQuestions.forEach(question => {
         if (selectedAnswers[question.id] === question.correctAnswer) {
           correctAnswers++;
         }
       });
       
-      const score = Math.round((correctAnswers / selectedTest.questions.length) * 100);
+      const score = Math.round((correctAnswers / testQuestions.length) * 100);
       const timeTaken = selectedTest.timeLimit * 60 - timeLeft;
       
       setTestResult({
         score,
         correctAnswers,
-        totalQuestions: selectedTest.questions.length,
+        totalQuestions: testQuestions.length,
         timeTaken
       });
       
@@ -144,6 +150,9 @@ export default function AptitudeTestPage() {
   const resetTest = () => {
     if (!selectedTest) return;
     
+    // Get new random questions for the same test
+    const newRandomQuestions = getRandomQuestions(selectedTest.questions, 5);
+    setTestQuestions(newRandomQuestions);
     setSelectedAnswers({});
     setCurrentQuestion(0);
     setTestFinished(false);
@@ -236,16 +245,16 @@ export default function AptitudeTestPage() {
   };
 
   const renderTestQuestion = () => {
-    if (!selectedTest) return null;
+    if (!selectedTest || !testQuestions.length) return null;
     
-    const currentQ = selectedTest.questions[currentQuestion];
+    const currentQ = testQuestions[currentQuestion];
     
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold">{selectedTest.title}</h2>
-            <p className="text-muted-foreground">Question {currentQuestion + 1} of {selectedTest.questions.length}</p>
+            <p className="text-muted-foreground">Question {currentQuestion + 1} of {testQuestions.length}</p>
           </div>
           <div className="text-right">
             <div className="text-lg font-bold flex items-center">
@@ -257,7 +266,7 @@ export default function AptitudeTestPage() {
         </div>
         
         <Progress 
-          value={((currentQuestion + 1) / selectedTest.questions.length) * 100} 
+          value={((currentQuestion + 1) / testQuestions.length) * 100} 
           className="h-2"
         />
         
@@ -311,7 +320,7 @@ export default function AptitudeTestPage() {
               Previous
             </Button>
             
-            {currentQuestion < selectedTest.questions.length - 1 ? (
+            {currentQuestion < testQuestions.length - 1 ? (
               <Button onClick={goToNextQuestion}>
                 Next
                 <ChevronRight className="ml-2 h-4 w-4" />
@@ -326,10 +335,10 @@ export default function AptitudeTestPage() {
         
         <div className="flex justify-center">
           <div className="flex flex-wrap gap-2 max-w-lg">
-            {selectedTest.questions.map((_, idx) => (
+            {testQuestions.map((_, idx) => (
               <Button
                 key={idx}
-                variant={idx === currentQuestion ? "default" : selectedAnswers[selectedTest.questions[idx].id] ? "secondary" : "outline"}
+                variant={idx === currentQuestion ? "default" : selectedAnswers[testQuestions[idx].id] ? "secondary" : "outline"}
                 size="sm"
                 className="w-10 h-10 p-0"
                 onClick={() => setCurrentQuestion(idx)}
@@ -344,7 +353,7 @@ export default function AptitudeTestPage() {
   };
 
   const renderTestResult = () => {
-    if (!selectedTest || !testResult) return null;
+    if (!selectedTest || !testResult || !testQuestions.length) return null;
     
     const { score, correctAnswers, totalQuestions, timeTaken } = testResult;
     const minutes = Math.floor(timeTaken / 60);
@@ -385,7 +394,7 @@ export default function AptitudeTestPage() {
               <h3 className="font-semibold">Question Review</h3>
               
               <div className="space-y-4">
-                {selectedTest.questions.map((question, idx) => {
+                {testQuestions.map((question, idx) => {
                   const isCorrect = selectedAnswers[question.id] === question.correctAnswer;
                   
                   return (

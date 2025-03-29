@@ -1,4 +1,3 @@
-
 export interface Question {
   id: string;
   question: string;
@@ -50,6 +49,20 @@ export const quantitativeQuestions: Question[] = [
     options: ["$1,000", "$1,025", "$1,050", "$1,100"],
     correctAnswer: "$1,050",
     explanation: "Using CI formula, A = P(1+r/100)^t = $5,000(1+10/100)^2 = $5,000 × 1.21 = $6,050. Interest = $6,050 - $5,000 = $1,050"
+  },
+  {
+    id: "q6",
+    question: "A cylindrical tank with radius 5m and height 8m is filled with water. What is the volume of water in cubic meters?",
+    options: ["550π", "200π", "625π", "400π"],
+    correctAnswer: "200π",
+    explanation: "Volume of cylinder = πr²h = π × 5² × 8 = 200π cubic meters"
+  },
+  {
+    id: "q7",
+    question: "If the cost price of 12 items is equal to the selling price of 10 items, what is the profit percentage?",
+    options: ["10%", "15%", "20%", "25%"],
+    correctAnswer: "20%",
+    explanation: "Let CP of 1 item be x. Then SP of 1 item is 1.2x (since 12x = 10 × SP, so SP = 1.2x). Profit % = ((SP-CP)/CP) × 100 = ((1.2x-x)/x) × 100 = 20%"
   }
 ];
 
@@ -98,6 +111,20 @@ export const logicalQuestions: Question[] = [
     ],
     correctAnswer: "It's impossible to tell",
     explanation: "We know the relative heights of Jack compared to Peter and Bill compared to Jack, but we can't determine the relative heights of Bill and Peter based on the given information."
+  },
+  {
+    id: "l6",
+    question: "A cube is painted red on all faces. It is then cut into 27 identical smaller cubes. How many of these smaller cubes have exactly one face painted red?",
+    options: ["6", "8", "12", "24"],
+    correctAnswer: "6",
+    explanation: "When a 3×3×3 cube is cut, the centers of each face (6 cubes) will have exactly one face painted."
+  },
+  {
+    id: "l7",
+    question: "In a line of people, Rahul is 10th from the left and 25th from the right. How many people are there in the line?",
+    options: ["33", "34", "35", "36"],
+    correctAnswer: "34",
+    explanation: "If Rahul is 10th from left and 25th from right, then total number of people = 10 + 25 - 1 = 34 (subtract 1 because Rahul is counted twice)"
   }
 ];
 
@@ -151,6 +178,25 @@ export const verbalQuestions: Question[] = [
     ],
     correctAnswer: "\"Where are you going?\" John asked.",
     explanation: "This correctly places the question mark inside the quotation marks and has proper placement of the dialogue and speaker attribution."
+  },
+  {
+    id: "v6",
+    question: "Select the pair of words that have a similar relationship to: LIGHT : BLIND",
+    options: [
+      "Sound : Deaf",
+      "Speech : Mute",
+      "Language : Dumb",
+      "Food : Hungry"
+    ],
+    correctAnswer: "Sound : Deaf",
+    explanation: "Light is what a blind person cannot perceive, just as sound is what a deaf person cannot perceive."
+  },
+  {
+    id: "v7",
+    question: "Choose the word that best completes the sentence: 'Despite her initial ________, she eventually agreed to participate in the project.'",
+    options: ["enthusiasm", "reluctance", "indifference", "eagerness"],
+    correctAnswer: "reluctance",
+    explanation: "The word 'despite' indicates a contrast, and the phrase 'eventually agreed' suggests overcoming an initial unwillingness, making 'reluctance' the most appropriate choice."
   }
 ];
 
@@ -189,6 +235,20 @@ export const dataInterpretationQuestions: Question[] = [
     options: ["$2.3 million", "$2.5 million", "$2.65 million", "$3 million"],
     correctAnswer: "$2.65 million",
     explanation: "Profit in 2021 = $2 million × 1.15 = $2.3 million. Profit in 2022 = $2.3 million × 1.15 = $2.645 million ≈ $2.65 million."
+  },
+  {
+    id: "d6",
+    question: "A company's sales increased by 10% from 2020 to 2021, and then by 15% from 2021 to 2022. If the sales in 2022 were $575,000, what were the sales in 2020?",
+    options: ["$452,000", "$454,545", "$500,000", "$525,000"],
+    correctAnswer: "$454,545",
+    explanation: "If x is sales in 2020, then sales in 2022 = x × 1.1 × 1.15 = 1.265x. So, 1.265x = $575,000, which gives x = $454,545 (rounded)."
+  },
+  {
+    id: "d7",
+    question: "In a survey of 400 people, the ratio of those who own both a car and a bicycle to those who own a car only is 3:5. If 320 people own at least one of these vehicles, how many people own a bicycle only?",
+    options: ["60", "80", "120", "200"],
+    correctAnswer: "80",
+    explanation: "Let x = number with both, y = number with car only, z = number with bicycle only. Then x:y = 3:5, so x = 3k and y = 5k for some k. Also, x + y + z = 320, so 3k + 5k + z = 320. Total owning at least one = 320, so 3k + 5k + z = 320. From the ratio, 3k + 5k = 8k = number with cars. If we set 8k = 240, then k = 30, so x = 90, y = 150, and z = 320 - 240 = 80."
   }
 ];
 
@@ -222,3 +282,8 @@ export const aptitudeTests: AptitudeTest[] = [
     questions: dataInterpretationQuestions
   }
 ];
+
+export function getRandomQuestions(allQuestions: Question[], count: number): Question[] {
+  const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, Math.min(count, shuffled.length));
+}

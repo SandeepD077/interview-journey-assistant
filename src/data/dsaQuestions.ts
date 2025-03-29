@@ -1,4 +1,3 @@
-
 export interface DSAQuestion {
   id: string;
   title: string;
@@ -245,5 +244,169 @@ class Solution {
     }
 }`
     }
+  },
+  {
+    id: "maximum-subarray",
+    title: "Maximum Subarray",
+    difficulty: "Medium",
+    category: "Dynamic Programming",
+    description: "Given an integer array nums, find the subarray with the largest sum, and return its sum. A subarray is a contiguous non-empty sequence of elements within an array.",
+    examples: [
+      {
+        input: "nums = [-2,1,-3,4,-1,2,1,-5,4]",
+        output: "6",
+        explanation: "The subarray [4,-1,2,1] has the largest sum 6."
+      },
+      {
+        input: "nums = [1]",
+        output: "1"
+      },
+      {
+        input: "nums = [5,4,-1,7,8]",
+        output: "23",
+        explanation: "The subarray [5,4,-1,7,8] has the largest sum 23."
+      }
+    ],
+    constraints: [
+      "1 <= nums.length <= 10^5",
+      "-10^4 <= nums[i] <= 10^4"
+    ],
+    starterCode: {
+      javascript: `function maxSubArray(nums) {
+  // Write your code here
+};`,
+      python: `def maxSubArray(nums):
+    # Write your code here
+    pass`,
+      java: `class Solution {
+    public int maxSubArray(int[] nums) {
+        // Write your code here
+    }
+}`
+    }
+  },
+  {
+    id: "climbing-stairs",
+    title: "Climbing Stairs",
+    difficulty: "Easy",
+    category: "Dynamic Programming",
+    description: "You are climbing a staircase. It takes n steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?",
+    examples: [
+      {
+        input: "n = 2",
+        output: "2",
+        explanation: "There are two ways to climb to the top. 1. 1 step + 1 step. 2. 2 steps."
+      },
+      {
+        input: "n = 3",
+        output: "3",
+        explanation: "There are three ways to climb to the top. 1. 1 step + 1 step + 1 step. 2. 1 step + 2 steps. 3. 2 steps + 1 step."
+      }
+    ],
+    constraints: [
+      "1 <= n <= 45"
+    ],
+    starterCode: {
+      javascript: `function climbStairs(n) {
+  // Write your code here
+};`,
+      python: `def climbStairs(n):
+    # Write your code here
+    pass`,
+      java: `class Solution {
+    public int climbStairs(int n) {
+        // Write your code here
+    }
+}`
+    }
+  },
+  {
+    id: "lru-cache",
+    title: "LRU Cache",
+    difficulty: "Hard",
+    category: "Design",
+    description: "Design a data structure that follows the constraints of a Least Recently Used (LRU) cache. Implement the LRUCache class: LRUCache(int capacity) initializes the LRU cache with positive size capacity. int get(int key) returns the value of the key if it exists, otherwise return -1. void put(int key, int value) updates the value of the key if it exists. Otherwise, add the key-value pair to the cache. If the number of keys exceeds the capacity from this operation, evict the least recently used key.",
+    examples: [
+      {
+        input: `["LRUCache", "put", "put", "get", "put", "get", "put", "get", "get", "get"]
+[[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]`,
+        output: `[null, null, null, 1, null, -1, null, -1, 3, 4]`,
+        explanation: `LRUCache lRUCache = new LRUCache(2);
+lRUCache.put(1, 1); // cache is {1=1}
+lRUCache.put(2, 2); // cache is {1=1, 2=2}
+lRUCache.get(1);    // return 1
+lRUCache.put(3, 3); // LRU key was 2, evicts key 2, cache is {1=1, 3=3}
+lRUCache.get(2);    // returns -1 (not found)
+lRUCache.put(4, 4); // LRU key was 1, evicts key 1, cache is {4=4, 3=3}
+lRUCache.get(1);    // return -1 (not found)
+lRUCache.get(3);    // return 3
+lRUCache.get(4);    // return 4`
+      }
+    ],
+    constraints: [
+      "1 <= capacity <= 3000",
+      "0 <= key <= 10^4",
+      "0 <= value <= 10^5",
+      "At most 2 * 10^5 calls will be made to get and put."
+    ],
+    starterCode: {
+      javascript: `/**
+ * @param {number} capacity
+ */
+var LRUCache = function(capacity) {
+  // Write your code here
+};
+
+/** 
+ * @param {number} key
+ * @return {number}
+ */
+LRUCache.prototype.get = function(key) {
+  // Write your code here
+};
+
+/** 
+ * @param {number} key 
+ * @param {number} value
+ * @return {void}
+ */
+LRUCache.prototype.put = function(key, value) {
+  // Write your code here
+};`,
+      python: `class LRUCache:
+    def __init__(self, capacity: int):
+        # Write your code here
+
+    def get(self, key: int) -> int:
+        # Write your code here
+        
+    def put(self, key: int, value: int) -> None:
+        # Write your code here`,
+      java: `class LRUCache {
+    public LRUCache(int capacity) {
+        // Write your code here
+    }
+    
+    public int get(int key) {
+        // Write your code here
+    }
+    
+    public void put(int key, int value) {
+        // Write your code here
+    }
+}`
+    }
   }
 ];
+
+// Helper function to get random questions based on difficulty
+export function getRandomQuestions(difficulty?: "Easy" | "Medium" | "Hard", count = 5): DSAQuestion[] {
+  let filteredQuestions = dsaQuestions;
+  
+  if (difficulty) {
+    filteredQuestions = dsaQuestions.filter(q => q.difficulty === difficulty);
+  }
+  
+  const shuffled = [...filteredQuestions].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, Math.min(count, shuffled.length));
+}
