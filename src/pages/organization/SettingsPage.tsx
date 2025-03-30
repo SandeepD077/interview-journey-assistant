@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -17,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Heading, Separator } from "@/components/ui/heading";
+import { Heading } from "@/components/ui/heading";
+import { Separator } from "@/components/ui/separator";
 
 export default function SettingsPage() {
   const { currentUser } = useAuth();
