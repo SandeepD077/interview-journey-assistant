@@ -1,17 +1,14 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Link } from "react-router-dom";
-import { FileText, Code, BookOpen, Mic, Award, ChevronRight } from "lucide-react";
+import { FileText, Brain, MessageSquare, BookOpen, Bot } from "lucide-react";
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
   
-  // Redirect if no user or wrong user type
+  // Redirect if no user
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
@@ -23,174 +20,114 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome, {currentUser.name}</h1>
-            <p className="text-muted-foreground mt-1">
-              Track your progress and continue your interview preparation
-            </p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <Link to="/practice/interview">
-              <Button>Start Mock Interview</Button>
-            </Link>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Welcome back, {currentUser.name}! Prepare for your dream job.
+          </p>
         </div>
 
-        {/* Progress Overview */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Resume Completion</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Resume Builder
+              </CardTitle>
+              <CardDescription>Create professional resumes</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">60%</div>
-              <Progress value={60} className="h-2 mt-1" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Aptitude Tests</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">2/4</div>
-              <Progress value={50} className="h-2 mt-1" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">DSA Problems</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">5/20</div>
-              <Progress value={25} className="h-2 mt-1" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Mock Interviews</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1/5</div>
-              <Progress value={20} className="h-2 mt-1" />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="card-hover">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Resume Builder</CardTitle>
-                <FileText className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardDescription>Create and improve your resume</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">
-                Build a professional resume, get AI feedback, and download it in multiple formats.
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground">
+                Generate ATS-optimized resumes with AI-powered suggestions
               </p>
             </CardContent>
             <CardFooter>
-              <Link to="/resume-builder" className="w-full">
-                <Button variant="outline" className="w-full">
-                  <span>Continue</span>
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <Button asChild>
+                <Link to="/resume-builder">Get Started</Link>
+              </Button>
             </CardFooter>
           </Card>
 
-          <Card className="card-hover">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Aptitude Tests</CardTitle>
-                <BookOpen className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardDescription>Practice common aptitude questions</CardDescription>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Practice Tests
+              </CardTitle>
+              <CardDescription>Aptitude and DSA preparation</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm">
-                Test your quantitative, logical reasoning, verbal, and data interpretation skills.
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground">
+                Practice with simulated tests and coding challenges
               </p>
             </CardContent>
-            <CardFooter>
-              <Link to="/practice/aptitude" className="w-full">
-                <Button variant="outline" className="w-full">
-                  <span>Start Practice</span>
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+            <CardFooter className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link to="/practice/aptitude">Aptitude</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/practice/dsa">DSA</Link>
+              </Button>
             </CardFooter>
           </Card>
 
-          <Card className="card-hover">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>DSA Practice</CardTitle>
-                <Code className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardDescription>Sharpen your coding skills</CardDescription>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Mock Interview
+              </CardTitle>
+              <CardDescription>AI-powered interview preparation</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm">
-                Solve algorithms and data structure problems with real-time feedback.
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground">
+                Practice interviews with AI feedback and evaluation
               </p>
             </CardContent>
             <CardFooter>
-              <Link to="/practice/dsa" className="w-full">
-                <Button variant="outline" className="w-full">
-                  <span>Solve Problems</span>
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <Button asChild>
+                <Link to="/practice/interview">Start Practice</Link>
+              </Button>
             </CardFooter>
           </Card>
 
-          <Card className="card-hover">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Mock Interviews</CardTitle>
-                <Mic className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardDescription>Practice with AI interviewer</CardDescription>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Study Resources
+              </CardTitle>
+              <CardDescription>Learning materials</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm">
-                Simulate real interview experiences and get feedback on your responses.
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground">
+                Access curated resources for better preparation
               </p>
             </CardContent>
             <CardFooter>
-              <Link to="/practice/interview" className="w-full">
-                <Button variant="outline" className="w-full">
-                  <span>Start Interview</span>
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <Button asChild>
+                <Link to="/resources">Explore</Link>
+              </Button>
             </CardFooter>
           </Card>
 
-          <Card className="card-hover">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Study Resources</CardTitle>
-                <Award className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardDescription>Access learning materials</CardDescription>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Bot className="h-5 w-5" />
+                AI Assistant
+              </CardTitle>
+              <CardDescription>Personalized career guidance</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm">
-                Find curated resources to improve your knowledge in various technical areas.
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground">
+                Get advice on job search, interviews, and career development
               </p>
             </CardContent>
             <CardFooter>
-              <Link to="/resources" className="w-full">
-                <Button variant="outline" className="w-full">
-                  <span>Explore Resources</span>
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <Button asChild>
+                <Link to="/assistant">Chat Now</Link>
+              </Button>
             </CardFooter>
           </Card>
         </div>

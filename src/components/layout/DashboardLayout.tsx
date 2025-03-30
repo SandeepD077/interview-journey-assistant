@@ -1,209 +1,265 @@
+import {
+  useState,
+  useEffect,
+  useRef
+} from "react"
+import {
+  useNavigate
+} from "react-router-dom"
 
-import { useAuth } from "@/contexts/AuthContext";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import {
+  cn
+} from "@/lib/utils"
+import {
+  useAuth
+} from "@/contexts/AuthContext"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage
+} from "@/components/ui/avatar"
+import {
+  Button
+} from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  ChevronDown, 
-  Menu, 
-  X, 
-  LogOut, 
-  User as UserIcon,
-  Settings,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  SidebarNavItem,
+  SidebarNav
+} from "@/components/ui/sidebar-nav"
+import {
+  ModeToggle
+} from "@/components/mode-toggle"
+import {
+  Separator
+} from "@/components/ui/separator"
+import {
+  Skeleton
+} from "@/components/ui/skeleton"
+
+import {
+  Home,
   FileText,
   BookOpen,
-  Code,
-  Mic,
-  Home,
-  BarChart,
+  User,
   Users,
-  Award
+  LineChart,
+  Settings,
+  LogOut,
+  Brain,
+  Bot,
+  MessageSquare
 } from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { currentUser, logout } = useAuth();
+export function DashboardLayout({
+  children
+}: DashboardLayoutProps) {
+  const {
+    currentUser,
+    logout
+  } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
-  const userRoutes = [
-    { name: "Dashboard", path: "/dashboard", icon: <Home className="h-5 w-5" /> },
-    { name: "Resume Builder", path: "/resume-builder", icon: <FileText className="h-5 w-5" /> },
-    { name: "Aptitude Tests", path: "/practice/aptitude", icon: <BookOpen className="h-5 w-5" /> },
-    { name: "DSA Practice", path: "/practice/dsa", icon: <Code className="h-5 w-5" /> },
-    { name: "Mock Interviews", path: "/practice/interview", icon: <Mic className="h-5 w-5" /> },
-    { name: "Study Resources", path: "/resources", icon: <Award className="h-5 w-5" /> },
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center">
+        <Skeleton className="w-[300px] h-[400px]" />
+      </div>
+    )
+  }
+
+  const userNavigation = [{
+      name: "Home",
+      href: "/dashboard",
+      icon: Home,
+    },
+    {
+      name: "Resume Builder",
+      href: "/resume-builder",
+      icon: FileText,
+    },
+    {
+      name: "Aptitude Test",
+      href: "/practice/aptitude",
+      icon: Brain,
+    },
+    {
+      name: "DSA Practice",
+      href: "/practice/dsa",
+      icon: Brain,
+    },
+    {
+      name: "Mock Interview",
+      href: "/practice/interview",
+      icon: MessageSquare,
+    },
+    {
+      name: "Study Resources",
+      href: "/resources",
+      icon: BookOpen,
+    },
+    {
+      name: "AI Assistant",
+      href: "/assistant",
+      icon: Bot,
+    },
+    {
+      name: "Profile",
+      href: "/profile",
+      icon: User,
+    },
   ];
 
-  const orgRoutes = [
-    { name: "Dashboard", path: "/organization-dashboard", icon: <Home className="h-5 w-5" /> },
-    { name: "Candidates", path: "/candidates", icon: <Users className="h-5 w-5" /> },
-    { name: "Analytics", path: "/analytics", icon: <BarChart className="h-5 w-5" /> },
-    { name: "Settings", path: "/settings", icon: <Settings className="h-5 w-5" /> },
+  const organizationNavigation = [{
+      name: "Home",
+      href: "/organization-dashboard",
+      icon: Home,
+    },
+    {
+      name: "Candidates",
+      href: "/candidates",
+      icon: Users,
+    },
+    {
+      name: "Analytics",
+      href: "/analytics",
+      icon: LineChart,
+    },
+    {
+      name: "Settings",
+      href: "/settings",
+      icon: Settings,
+    },
   ];
 
-  const routes = currentUser?.role === "organization" ? orgRoutes : userRoutes;
+  const renderMobileNav = () => (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="sm" className="ml-2">
+          Menu
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="pr-0">
+        <SheetHeader className="space-y-2.5">
+          <SheetTitle>Menu</SheetTitle>
+          <SheetDescription>
+            {currentUser?.role === "user" ?
+              "User Dashboard Navigation" :
+              "Organization Dashboard Navigation"}
+          </SheetDescription>
+        </SheetHeader>
+        <SidebarNav>
+          <div className="flex flex-col space-y-1">
+            {(currentUser?.role === "user" ? userNavigation : organizationNavigation).map((item) => (
+              <SidebarNavItem key={item.name} title={item.name} href={item.href} icon={item.icon} />
+            ))}
+          </div>
+        </SidebarNav>
+        <SheetFooter>
+          <Button variant="outline" onClick={() => logout().then(() => navigate('/login'))} className="w-full justify-start">
+            <LogOut className="h-4 w-4 mr-2" />
+            Log out
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
 
-  const isActive = (path: string) => {
-    if (path === "/dashboard" || path === "/organization-dashboard") {
-      return location.pathname === path;
-    }
-    return location.pathname.startsWith(path);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
+  const renderDesktopNav = () => (
+    <div ref={sidebarRef} className="hidden border-r bg-secondary h-screen w-[280px] py-4 flex-col flex md:flex">
+      <div className="px-4 mb-4">
+        <ModeToggle />
+      </div>
+      <Separator />
+      <SidebarNav>
+        <div className="flex flex-col space-y-1">
+          {(currentUser?.role === "user" ? userNavigation : organizationNavigation).map((item) => (
+            <SidebarNavItem key={item.name} title={item.name} href={item.href} icon={item.icon} />
+          ))}
+        </div>
+      </SidebarNav>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
-      {/* Sidebar for desktop */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-white border-r">
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          <div className="flex items-center h-16 px-4 border-b">
-            <Link to="/" className="text-xl font-bold text-primary">
-              Interview Express
-            </Link>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            {routes.map((route) => (
-              <Link
-                key={route.path}
-                to={route.path}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors",
-                  isActive(route.path) && "bg-primary text-white hover:bg-primary/90"
-                )}
-              >
-                {route.icon}
-                <span>{route.name}</span>
-              </Link>
-            ))}
-          </nav>
-          <div className="p-4 border-t">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full flex items-center justify-between">
-                  <div className="flex items-center">
-                    <UserIcon className="h-4 w-4 mr-2" />
-                    <span className="truncate max-w-[140px]">
-                      {currentUser?.name || "User"}
-                    </span>
-                  </div>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </aside>
+    <div className="flex h-screen bg-background">
+      {renderDesktopNav()}
 
-      {/* Mobile header */}
-      <div className="md:hidden sticky top-0 z-10 flex items-center justify-between h-16 px-4 bg-white border-b">
-        <button
-          className="p-2 rounded-md"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-        <Link to="/" className="text-xl font-bold text-primary">
-          Interview Express
-        </Link>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="px-2">
-              <UserIcon className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate("/profile")}>
-              <UserIcon className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/settings")}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Mobile sidebar */}
-      {sidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-40 flex">
-          <div
-            className="fixed inset-0 bg-gray-600 bg-opacity-75"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-            <div className="flex justify-between items-center h-16 px-4 border-b">
-              <span className="text-lg font-medium">Menu</span>
-              <button
-                className="p-2 rounded-md"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              {routes.map((route) => (
-                <Link
-                  key={route.path}
-                  to={route.path}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-md text-gray-700 hover:bg-gray-100 transition-colors mb-1",
-                    isActive(route.path) && "bg-primary text-white hover:bg-primary/90"
-                  )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  {route.icon}
-                  <span>{route.name}</span>
-                </Link>
-              ))}
-            </div>
+      <div className="flex-1 flex flex-col">
+        <header className="px-4 py-2 border-b h-[60px] flex items-center justify-between">
+          <div className="flex items-center">
+            {renderMobileNav()}
+            <h1 className="text-xl font-semibold">
+              {currentUser?.role === "user" ? "User Dashboard" : "Organization Dashboard"}
+            </h1>
           </div>
-        </div>
-      )}
 
-      {/* Main content */}
-      <main className="flex-1 md:pl-64">
-        <div className="py-6 sm:px-6 lg:px-8">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={currentUser?.image} alt={currentUser?.name || "Avatar"} />
+                  <AvatarFallback>{currentUser?.name ? currentUser?.name[0].toUpperCase() : "U"}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/profile')}>
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => logout().then(() => navigate('/login'))}>
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
+
+        <main className="flex-1 p-6">
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
+
+interface SheetFooterProps extends React.HTMLAttributes < HTMLDivElement > {}
+
+function SheetFooter({
+  className,
+  children,
+  ...props
+}: SheetFooterProps) {
+  return (
+    <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props}>
+      {children}
+    </div>
+  )
+}
+SheetFooter.displayName = "SheetFooter"

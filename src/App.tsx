@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 // Create the mock interview page and study resources page
 import MockInterviewPage from "./pages/practice/MockInterviewPage";
 import StudyResourcesPage from "./pages/resources/StudyResourcesPage";
+import AIAssistantPage from "./pages/assistant/AIAssistantPage";
 
 // Organization related pages
 import CandidatesPage from "./pages/organization/CandidatesPage";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/practice/interview" element={<MockInterviewPage />} />
             <Route path="/resources" element={<StudyResourcesPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/assistant" element={<AIAssistantPage />} />
             
             {/* Organization routes */}
             <Route path="/organization-dashboard" element={<OrganizationDashboard />} />
