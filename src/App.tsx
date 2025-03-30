@@ -21,6 +21,10 @@ import DSAPracticePage from "./pages/practice/DSAPracticePage";
 import ProfilePage from "./pages/user/ProfilePage";
 import NotFound from "./pages/NotFound";
 
+// Feature and About pages
+import FeaturesPage from "./pages/FeaturesPage";
+import AboutPage from "./pages/AboutPage";
+
 // Create the mock interview page and study resources page
 import MockInterviewPage from "./pages/practice/MockInterviewPage";
 import StudyResourcesPage from "./pages/resources/StudyResourcesPage";
@@ -47,6 +51,8 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/about" element={<AboutPage />} />
               
               {/* User routes */}
               <Route path="/dashboard" element={<Dashboard />} />

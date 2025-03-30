@@ -71,6 +71,14 @@ export default function LandingPage() {
             icon={BarChart}
           />
         </div>
+        
+        <div className="mt-10 text-center">
+          <Link to="/features">
+            <Button size="lg">
+              View All Features
+            </Button>
+          </Link>
+        </div>
       </SectionContainer>
 
       {/* How It Works Section */}

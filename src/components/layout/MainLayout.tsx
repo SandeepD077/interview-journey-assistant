@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -78,15 +77,6 @@ export function MainLayout({ children }: MainLayoutProps) {
                   )}
                 >
                   Features
-                </Link>
-                <Link 
-                  to="/pricing" 
-                  className={cn(
-                    "nav-link",
-                    isActive("/pricing") && "active"
-                  )}
-                >
-                  Pricing
                 </Link>
                 <Link 
                   to="/about"
@@ -177,14 +167,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                   Features
                 </Link>
                 <Link 
-                  to="/pricing" 
-                  className="block py-2 text-base font-medium hover:text-primary"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Pricing
-                </Link>
-                <Link 
-                  to="/about"
+                  to="/about" 
                   className="block py-2 text-base font-medium hover:text-primary"
                   onClick={() => setMobileMenuOpen(false)}
                 >
