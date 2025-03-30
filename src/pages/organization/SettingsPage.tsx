@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -18,9 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Heading, Separator } from "@/components/ui/heading";
 
 export default function SettingsPage() {
   const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
   
   // Redirect if no user or wrong user type
   if (!currentUser) {
@@ -82,10 +83,11 @@ export default function SettingsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Organization Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your organization profile and preferences
-          </p>
+          <Heading 
+            title="Organization Settings" 
+            description={`Configure settings for ${currentUser?.organizationName || 'your organization'}`} 
+          />
+          <Separator className="my-6" />
         </div>
         
         <Tabs defaultValue="profile" className="w-full">

@@ -7,6 +7,7 @@ interface User {
   email: string;
   role: "user" | "organization";
   image?: string;
+  organizationName?: string;
 }
 
 interface AuthContextType {
@@ -14,7 +15,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, role?: "user" | "organization", organizationName?: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
 
@@ -43,7 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<void> => {
+  const register = async (
+    name: string, 
+    email: string, 
+    password: string, 
+    role: "user" | "organization" = "user", 
+    organizationName?: string
+  ): Promise<void> => {
     setIsLoading(true);
     try {
       // Mock register - in a real app, this would call an API
@@ -52,7 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: "1",
           name: name,
           email: email,
-          role: "user"
+          role: role,
+          organizationName: role === "organization" ? organizationName : undefined
         });
         setIsLoading(false);
       }, 1000);

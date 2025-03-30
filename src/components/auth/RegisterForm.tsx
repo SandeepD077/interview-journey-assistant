@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -68,19 +69,18 @@ export function RegisterForm() {
   async function onSubmit(data: RegisterFormValues) {
     setIsLoading(true);
     try {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword, organizationName, ...registerData } = data;
       
-      const userData = {
-        ...registerData,
-        role: userType,
-        password: data.password,
-      };
+      await register(
+        registerData.name,
+        registerData.email,
+        registerData.password,
+        userType,
+        userType === "organization" ? organizationName : undefined
+      );
       
-      const success = await register(userData);
-
-      if (success) {
-        navigate(userType === "user" ? "/dashboard" : "/organization-dashboard");
-      }
+      toast.success("Account created successfully!");
+      navigate(userType === "user" ? "/dashboard" : "/organization-dashboard");
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Something went wrong. Please try again.");

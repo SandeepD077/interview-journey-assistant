@@ -142,13 +142,13 @@ export default function ProfilePage() {
                             </p>
                           </div>
                           
-                          {currentUser?.role === 'organization' && (
+                          {currentUser?.role === 'organization' && currentUser.organizationName && (
                             <div className="grid gap-2">
                               <Label htmlFor="organizationName">Organization Name</Label>
                               <Input 
                                 id="organizationName" 
                                 name="organizationName" 
-                                defaultValue={currentUser?.organizationName} 
+                                defaultValue={currentUser.organizationName} 
                                 placeholder="Acme Inc." 
                               />
                             </div>

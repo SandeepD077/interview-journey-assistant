@@ -25,16 +25,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-
-type UserRole = "user" | "organization";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters",
-  }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -42,7 +37,6 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [userType, setUserType] = useState<UserRole>("user");
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -51,18 +45,19 @@ export function LoginForm() {
       email: "",
       password: "",
     },
+    mode: "onChange",
   });
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     try {
-      const success = await login(data.email, data.password, userType);
-      if (success) {
-        navigate(userType === "user" ? "/dashboard" : "/organization-dashboard");
-      }
+      await login(data.email, data.password);
+      
+      // The navigation will be handled by the useEffect in the LoginPage.tsx
+      toast.success("Logged in successfully!");
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error("Invalid email or password. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -71,19 +66,10 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Login to Interview Express</CardTitle>
-        <CardDescription className="text-center">
-          Access your account to continue your interview preparation
-        </CardDescription>
+        <CardTitle className="text-2xl font-bold text-center">Log In</CardTitle>
+        <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="user" className="w-full mb-6" onValueChange={(value) => setUserType(value as UserRole)}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="user">Job Seeker</TabsTrigger>
-            <TabsTrigger value="organization">Organization</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -104,12 +90,7 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
-                    <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                      Forgot password?
-                    </Link>
-                  </div>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input placeholder="••••••••" type="password" {...field} />
                   </FormControl>
@@ -117,20 +98,20 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading}
-            >
-              {isLoading ? "Logging in..." : "Sign In"}
+            <div className="text-right">
+              <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Log In"}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link to="/register" className="text-primary hover:underline font-medium">
             Sign up
           </Link>

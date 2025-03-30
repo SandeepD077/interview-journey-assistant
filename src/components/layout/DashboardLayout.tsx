@@ -1,4 +1,3 @@
-
 import {
   useState,
   useEffect,
@@ -71,15 +70,13 @@ interface DashboardLayoutProps {
   children: React.ReactNode
 }
 
-export function DashboardLayout({
-  children
-}: DashboardLayoutProps) {
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const {
     currentUser,
     logout
   } = useAuth();
   const navigate = useNavigate();
-  const [isMounted, setIsMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -231,7 +228,10 @@ export function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={currentUser?.photoURL || undefined} alt={currentUser?.name || "Avatar"} />
+                  <AvatarImage 
+                    src={currentUser?.image || "https://github.com/shadcn.png"} 
+                    alt={currentUser?.name || "Avatar"} 
+                  />
                   <AvatarFallback>{currentUser?.name ? currentUser?.name[0].toUpperCase() : "U"}</AvatarFallback>
                 </Avatar>
               </Button>
