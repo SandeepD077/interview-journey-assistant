@@ -1,168 +1,156 @@
 
-import React, { createContext, useState, useContext, useEffect } from "react";
-import { toast } from "sonner";
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-type UserRole = "user" | "organization" | null;
-
-interface UserData {
+// Define types for user data
+export interface UserData {
   id: string;
-  email: string;
   name: string;
-  role: UserRole;
+  email: string;
+  role: 'user' | 'organization';
   organizationName?: string;
+  photoURL?: string;
 }
 
+// Define AuthContext
 interface AuthContextType {
   currentUser: UserData | null;
-  isLoading: boolean;
-  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-  register: (data: Partial<UserData> & { password: string }) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: Partial<UserData>, password: string) => Promise<void>;
   logout: () => void;
-  resetPassword: (email: string) => Promise<boolean>;
+  forgotPassword: (email: string) => Promise<void>;
+  loading: boolean;
 }
-
-// Mock users for development
-const MOCK_USERS: UserData[] = [
-  {
-    id: "1",
-    email: "user@example.com",
-    name: "John Doe",
-    role: "user",
-  },
-  {
-    id: "2",
-    email: "org@example.com",
-    name: "Jane Smith",
-    role: "organization",
-    organizationName: "Acme Inc.",
-  },
-];
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// Sample user data for testing
+const sampleUser: UserData = {
+  id: '1',
+  name: 'John Doe',
+  email: 'john@example.com',
+  role: 'user',
+  photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John'
+};
+
+const sampleOrgUser: UserData = {
+  id: '2',
+  name: 'Alice Smith',
+  email: 'alice@techcorp.com',
+  role: 'organization',
+  organizationName: 'Tech Corporation',
+  photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice'
+};
+
+// Create Auth Provider
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [users, setUsers] = useState<(UserData & { password: string })[]>(
-    MOCK_USERS.map((user) => ({ ...user, password: "password" }))
-  );
+  const [loading, setLoading] = useState(true);
 
+  // Simulate checking for existing session
   useEffect(() => {
-    // Check if user is logged in from localStorage
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      try {
-        setCurrentUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse user data:", error);
-      }
+    // In a real app, you would check for an existing token and validate it
+    const savedUser = localStorage.getItem('currentUser');
+    
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
     }
-    setIsLoading(false);
+    
+    setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
-    setIsLoading(true);
-    // Simulate network request
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
+  // Login function
+  const login = async (email: string, password: string): Promise<void> => {
+    setLoading(true);
+    
     try {
-      const foundUser = users.find(
-        (user) => user.email === email && user.password === password && user.role === role
-      );
-
-      if (foundUser) {
-        const { password, ...userData } = foundUser;
-        setCurrentUser(userData);
-        localStorage.setItem("currentUser", JSON.stringify(userData));
-        toast.success("Logged in successfully!");
-        return true;
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Sample login logic - in real app, would call authentication API
+      let user: UserData;
+      
+      if (email.includes('org') || email.includes('tech')) {
+        user = sampleOrgUser;
+      } else {
+        user = sampleUser;
       }
       
-      toast.error("Invalid email or password");
-      return false;
+      setCurrentUser(user);
+      localStorage.setItem('currentUser', JSON.stringify(user));
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const register = async (data: Partial<UserData> & { password: string }): Promise<boolean> => {
-    setIsLoading(true);
-    // Simulate network request
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
+  // Register function
+  const register = async (userData: Partial<UserData>, password: string): Promise<void> => {
+    setLoading(true);
+    
     try {
-      // Check if user already exists
-      const userExists = users.some((user) => user.email === data.email);
-      if (userExists) {
-        toast.error("User with this email already exists");
-        return false;
-      }
-
-      // Create new user
-      const newUser = {
-        id: `user_${Date.now()}`,
-        email: data.email || "",
-        name: data.name || "",
-        role: data.role || "user",
-        password: data.password,
-        organizationName: data.organizationName,
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, would call registration API
+      const newUser: UserData = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: userData.name || 'New User',
+        email: userData.email || 'user@example.com',
+        role: userData.role || 'user',
+        organizationName: userData.organizationName,
+        photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name}`
       };
-
-      setUsers([...users, newUser]);
       
-      // Log in the new user
-      const { password, ...userData } = newUser;
-      setCurrentUser(userData);
-      localStorage.setItem("currentUser", JSON.stringify(userData));
-      
-      toast.success("Account created successfully!");
-      return true;
+      setCurrentUser(newUser);
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const resetPassword = async (email: string): Promise<boolean> => {
-    setIsLoading(true);
-    // Simulate network request
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    try {
-      const userExists = users.some((user) => user.email === email);
-      if (!userExists) {
-        toast.error("No account found with this email");
-        return false;
-      }
-
-      toast.success("Password reset link sent to your email!");
-      return true;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const logout = () => {
+  // Logout function
+  const logout = (): void => {
     setCurrentUser(null);
-    localStorage.removeItem("currentUser");
-    toast.success("Logged out successfully");
+    localStorage.removeItem('currentUser');
+  };
+
+  // Forgot password function
+  const forgotPassword = async (email: string): Promise<void> => {
+    setLoading(true);
+    
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, would call password reset API
+      console.log(`Password reset email sent to ${email}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {
     currentUser,
-    isLoading,
     login,
     register,
     logout,
-    resetPassword,
+    forgotPassword,
+    loading
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
+// Custom hook for using AuthContext
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
+  
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
+  
   return context;
 };

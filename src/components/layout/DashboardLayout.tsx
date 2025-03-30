@@ -1,3 +1,4 @@
+
 import {
   useState,
   useEffect,
@@ -36,6 +37,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetFooter
 } from "@/components/ui/sheet"
 import {
   SidebarNavItem,
@@ -180,7 +182,14 @@ export function DashboardLayout({
           </div>
         </SidebarNav>
         <SheetFooter>
-          <Button variant="outline" onClick={() => logout().then(() => navigate('/login'))} className="w-full justify-start">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }} 
+            className="w-full justify-start"
+          >
             <LogOut className="h-4 w-4 mr-2" />
             Log out
           </Button>
@@ -222,7 +231,7 @@ export function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={currentUser?.image} alt={currentUser?.name || "Avatar"} />
+                  <AvatarImage src={currentUser?.photoURL || undefined} alt={currentUser?.name || "Avatar"} />
                   <AvatarFallback>{currentUser?.name ? currentUser?.name[0].toUpperCase() : "U"}</AvatarFallback>
                 </Avatar>
               </Button>
@@ -234,7 +243,10 @@ export function DashboardLayout({
                 Profile
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout().then(() => navigate('/login'))}>
+              <DropdownMenuItem onClick={() => {
+                logout();
+                navigate('/login');
+              }}>
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -248,18 +260,3 @@ export function DashboardLayout({
     </div>
   );
 }
-
-interface SheetFooterProps extends React.HTMLAttributes < HTMLDivElement > {}
-
-function SheetFooter({
-  className,
-  children,
-  ...props
-}: SheetFooterProps) {
-  return (
-    <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props}>
-      {children}
-    </div>
-  )
-}
-SheetFooter.displayName = "SheetFooter"
