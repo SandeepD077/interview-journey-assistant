@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Textarea } from "@/components/ui/textarea";
 import { dsaQuestions, DSAQuestion } from "@/data/dsaQuestions";
+import { generatedDSAQuestions } from "@/data/generatedDSAQuestions";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +23,8 @@ import {
   XCircle,
   Loader2,
   ArrowLeft,
-  RefreshCw
+  RefreshCw,
+  Database
 } from "lucide-react";
 
 export default function DSAPracticePage() {
@@ -43,34 +45,32 @@ export default function DSAPracticePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  
-  // Redirect if no user or wrong user type
+  const [questionSource, setQuestionSource] = useState<"standard" | "leetcode">("standard");
+
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
-  
+
   if (currentUser.role !== "user") {
     return <Navigate to="/organization-dashboard" replace />;
   }
 
-  // Extract unique categories from questions
   const categories = Array.from(new Set(dsaQuestions.map(q => q.category)));
 
-  // Filter questions based on search and filters
-  const filteredQuestions = dsaQuestions.filter(question => {
+  const allQuestions = questionSource === "standard" ? dsaQuestions : generatedDSAQuestions;
+
+  const filteredQuestions = allQuestions.filter(question => {
     const matchesSearch = searchTerm 
       ? question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         question.description.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
       
-    // Updated filter logic to handle "all" value
     const matchesDifficulty = !difficultyFilter || difficultyFilter === "all" || question.difficulty === difficultyFilter;
     const matchesCategory = !categoryFilter || categoryFilter === "all" || question.category === categoryFilter;
     
     return matchesSearch && matchesDifficulty && matchesCategory;
   });
 
-  // Check if a question is selected from URL
   useEffect(() => {
     const questionId = searchParams.get('question');
     if (questionId) {
@@ -82,7 +82,6 @@ export default function DSAPracticePage() {
     }
   }, [searchParams]);
 
-  // Update code when language changes
   useEffect(() => {
     if (selectedQuestion) {
       setCode(selectedQuestion.starterCode[language as keyof typeof selectedQuestion.starterCode]);
@@ -103,10 +102,8 @@ export default function DSAPracticePage() {
     setResult(null);
     
     try {
-      // Simulate code execution
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Generate a random result for demo purposes
       const executionTime = Math.random() * 0.2 + 0.1;
       const success = Math.random() > 0.3;
       
@@ -140,7 +137,6 @@ export default function DSAPracticePage() {
     setResult(null);
     
     try {
-      // Build prompt for Gemini
       const prompt = `
         I'm solving this coding problem:
         
@@ -161,13 +157,10 @@ export default function DSAPracticePage() {
         5. Include any edge cases I might have missed.
       `;
       
-      // Call Gemini API
       const response = await queryGemini(prompt);
       
-      // Simulate submission delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Randomly determine success for demo purposes 
       const success = Math.random() > 0.3;
       const executionTime = Math.random() * 0.2 + 0.1;
       
@@ -208,6 +201,13 @@ export default function DSAPracticePage() {
     return (
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row gap-4">
+          <Tabs defaultValue={questionSource} onValueChange={(value) => setQuestionSource(value as "standard" | "leetcode")} className="w-full md:w-auto">
+            <TabsList>
+              <TabsTrigger value="standard">Standard Questions</TabsTrigger>
+              <TabsTrigger value="leetcode">LeetCode Questions</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input
@@ -292,6 +292,11 @@ export default function DSAPracticePage() {
               <CardContent className="pb-2">
                 <div className="flex gap-2">
                   <Badge variant="secondary">{question.category}</Badge>
+                  {questionSource === "leetcode" && (
+                    <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                      LeetCode
+                    </Badge>
+                  )}
                 </div>
               </CardContent>
               <CardFooter>
@@ -352,7 +357,6 @@ export default function DSAPracticePage() {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Question Description */}
           <div>
             <Card className="h-full">
               <CardHeader>
@@ -388,7 +392,6 @@ export default function DSAPracticePage() {
             </Card>
           </div>
           
-          {/* Code Editor */}
           <div className="flex flex-col">
             <Card className="flex-1">
               <CardHeader className="pb-3">
@@ -462,7 +465,6 @@ export default function DSAPracticePage() {
               </CardFooter>
             </Card>
             
-            {/* Result Output */}
             {result && (
               <Card className="mt-6">
                 <CardHeader className="pb-3">
@@ -518,10 +520,23 @@ export default function DSAPracticePage() {
       <div className="space-y-6">
         {!selectedQuestion ? (
           <>
-            <Heading 
-              title="DSA Practice" 
-              description="Practice algorithms and data structure problems to prepare for technical interviews"
-            />
+            <div className="flex justify-between items-center">
+              <Heading 
+                title="DSA Practice" 
+                description="Practice algorithms and data structure problems to prepare for technical interviews"
+              />
+              <Button 
+                variant="outline" 
+                onClick={() => toast.info(
+                  questionSource === "leetcode" 
+                    ? "Using questions sourced from LeetCode. These may contain external links." 
+                    : "Using standard question bank"
+                )}
+              >
+                <Database className="mr-2 h-4 w-4" />
+                Question Source Info
+              </Button>
+            </div>
             {renderQuestionsList()}
           </>
         ) : (
