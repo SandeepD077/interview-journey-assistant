@@ -10,6 +10,47 @@ import { aptitudeTests, Question, AptitudeTest, getRandomQuestions } from "@/dat
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Timer, Clock, ChevronLeft, ChevronRight, CheckCircle, RefreshCw, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+// Add a new API function to fetch geography questions
+const fetchGeographyQuestions = async (): Promise<Question[]> => {
+  try {
+    const response = await fetch('https://quizmania-api.p.rapidapi.com/trivia-by-category?category=Geography', {
+      headers: {
+        'x-rapidapi-host': 'quizmania-api.p.rapidapi.com',
+        'x-rapidapi-key': '69a124e424mshc5a72552ead8f72p11e8cejsnf637c705c734'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch questions');
+    }
+
+    const data = await response.json();
+    
+    // Transform the API response to match our Question type
+    return data.map((item: any, index: number) => ({
+      id: `geo-${index}`,
+      question: item.question,
+      options: [...item.incorrect_answers, item.correct_answer].sort(() => Math.random() - 0.5),
+      correctAnswer: item.correct_answer,
+      explanation: item.explanation || "No explanation provided."
+    }));
+  } catch (error) {
+    console.error('Error fetching geography questions:', error);
+    toast.error("Failed to load Geography questions. Using backup questions.");
+    return [];
+  }
+};
+
+// Extended aptitude tests list with Geography
+const geographyTest: AptitudeTest = {
+  id: "geography",
+  title: "Geography Knowledge",
+  description: "Test your knowledge of world geography",
+  timeLimit: 15,
+  questions: [] // Will be populated from API
+};
 
 export default function AptitudeTestPage() {
   const { currentUser } = useAuth();
@@ -28,6 +69,41 @@ export default function AptitudeTestPage() {
     timeTaken: number;
   } | null>(null);
   const [loadingResult, setLoadingResult] = useState(false);
+  const [allTests, setAllTests] = useState([...aptitudeTests]);
+  
+  // Geography questions query
+  const { data: geographyQuestions, isLoading: isLoadingGeography } = useQuery({
+    queryKey: ['geographyQuestions'],
+    queryFn: fetchGeographyQuestions,
+    enabled: searchParams.get('test') === 'geography' || selectedTest?.id === 'geography',
+    staleTime: 1000 * 60 * 5 // 5 minutes
+  });
+  
+  useEffect(() => {
+    // Add geography test to all tests once we have data
+    if (geographyQuestions && geographyQuestions.length > 0) {
+      const updatedGeographyTest = {
+        ...geographyTest,
+        questions: geographyQuestions
+      };
+      
+      // Update allTests with the geography test if it doesn't exist
+      if (!allTests.some(test => test.id === 'geography')) {
+        setAllTests(prev => [...prev, updatedGeographyTest]);
+      } else {
+        // Update the existing geography test with new questions
+        setAllTests(prev => 
+          prev.map(test => test.id === 'geography' ? updatedGeographyTest : test)
+        );
+      }
+      
+      // If geography test is selected, update the test questions
+      if (selectedTest?.id === 'geography') {
+        const randomQuestions = getRandomQuestions(geographyQuestions, 5);
+        setTestQuestions(randomQuestions);
+      }
+    }
+  }, [geographyQuestions]);
   
   // Redirect if no user or wrong user type
   if (!currentUser) {
@@ -42,15 +118,20 @@ export default function AptitudeTestPage() {
   useEffect(() => {
     const testId = searchParams.get('test');
     if (testId) {
-      const test = aptitudeTests.find(t => t.id === testId);
+      const test = allTests.find(t => t.id === testId);
       if (test) {
         setSelectedTest(test);
         // Get 5 random questions from the test's question pool
-        const randomQuestions = getRandomQuestions(test.questions, 5);
-        setTestQuestions(randomQuestions);
+        if (test.id === 'geography' && geographyQuestions) {
+          const randomQuestions = getRandomQuestions(geographyQuestions, 5);
+          setTestQuestions(randomQuestions);
+        } else {
+          const randomQuestions = getRandomQuestions(test.questions, 5);
+          setTestQuestions(randomQuestions);
+        }
       }
     }
-  }, [searchParams]);
+  }, [searchParams, allTests, geographyQuestions]);
 
   // Initialize timer when test starts
   useEffect(() => {
@@ -81,9 +162,16 @@ export default function AptitudeTestPage() {
   const selectTest = (test: AptitudeTest) => {
     setSelectedTest(test);
     setSearchParams({ test: test.id });
+    
     // Get 5 random questions from the test's question pool
-    const randomQuestions = getRandomQuestions(test.questions, 5);
-    setTestQuestions(randomQuestions);
+    if (test.id === 'geography' && geographyQuestions) {
+      const randomQuestions = getRandomQuestions(geographyQuestions, 5);
+      setTestQuestions(randomQuestions);
+    } else {
+      const randomQuestions = getRandomQuestions(test.questions, 5);
+      setTestQuestions(randomQuestions);
+    }
+    
     setSelectedAnswers({});
     setCurrentQuestion(0);
     setTestFinished(false);
@@ -151,8 +239,14 @@ export default function AptitudeTestPage() {
     if (!selectedTest) return;
     
     // Get new random questions for the same test
-    const newRandomQuestions = getRandomQuestions(selectedTest.questions, 5);
-    setTestQuestions(newRandomQuestions);
+    if (selectedTest.id === 'geography' && geographyQuestions) {
+      const randomQuestions = getRandomQuestions(geographyQuestions, 5);
+      setTestQuestions(randomQuestions);
+    } else {
+      const newRandomQuestions = getRandomQuestions(selectedTest.questions, 5);
+      setTestQuestions(newRandomQuestions);
+    }
+    
     setSelectedAnswers({});
     setCurrentQuestion(0);
     setTestFinished(false);
@@ -163,7 +257,7 @@ export default function AptitudeTestPage() {
   const renderTestSelection = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {aptitudeTests.map((test) => (
+        {allTests.map((test) => (
           <Card 
             key={test.id}
             className={`card-hover ${selectedTest?.id === test.id ? 'border-primary' : ''}`}
@@ -182,7 +276,11 @@ export default function AptitudeTestPage() {
               <div className="text-sm space-y-2">
                 <div className="flex items-center justify-between">
                   <span>Questions:</span>
-                  <span className="font-medium">{test.questions.length}</span>
+                  <span className="font-medium">
+                    {test.id === 'geography' && isLoadingGeography ? 
+                      'Loading...' : 
+                      test.questions.length}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Time Limit:</span>
@@ -195,8 +293,14 @@ export default function AptitudeTestPage() {
                 variant={selectedTest?.id === test.id ? "default" : "outline"} 
                 className="w-full"
                 onClick={() => selectTest(test)}
+                disabled={test.id === 'geography' && isLoadingGeography}
               >
-                {selectedTest?.id === test.id ? "Selected" : "Select"}
+                {isLoadingGeography && test.id === 'geography' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : selectedTest?.id === test.id ? "Selected" : "Select"}
               </Button>
             </CardFooter>
           </Card>
@@ -457,7 +561,7 @@ export default function AptitudeTestPage() {
       <div className="space-y-6">
         <Heading 
           title="Aptitude Tests" 
-          description="Practice with quantitative, logical, verbal, and data interpretation questions"
+          description="Practice with quantitative, logical, verbal, geography and data interpretation questions"
         />
         
         {!selectedTest && renderTestSelection()}
