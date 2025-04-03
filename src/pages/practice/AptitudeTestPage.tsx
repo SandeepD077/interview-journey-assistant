@@ -9,10 +9,10 @@ import { Separator } from "@/components/ui/separator";
 import { aptitudeTests, Question, AptitudeTest, getRandomQuestions } from "@/data/aptitudeQuestions";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Timer, Clock, ChevronLeft, ChevronRight, CheckCircle, RefreshCw, Loader2 } from "lucide-react";
+import { Timer, Clock, ChevronLeft, ChevronRight, CheckCircle, RefreshCw, Loader2, Search, LightbulbIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { explainAptitudeAnswer } from "@/services/geminiService";
 
-// Add a new API function to fetch geography questions
 const fetchGeographyQuestions = async (): Promise<Question[]> => {
   try {
     const response = await fetch('https://quizmania-api.p.rapidapi.com/trivia-by-category?category=Geography', {
@@ -28,7 +28,6 @@ const fetchGeographyQuestions = async (): Promise<Question[]> => {
 
     const data = await response.json();
     
-    // Transform the API response to match our Question type
     return data.map((item: any, index: number) => ({
       id: `geo-${index}`,
       question: item.question,
@@ -43,13 +42,12 @@ const fetchGeographyQuestions = async (): Promise<Question[]> => {
   }
 };
 
-// Extended aptitude tests list with Geography
 const geographyTest: AptitudeTest = {
   id: "geography",
   title: "Geography Knowledge",
   description: "Test your knowledge of world geography",
   timeLimit: 15,
-  questions: [] // Will be populated from API
+  questions: []
 };
 
 export default function AptitudeTestPage() {
@@ -70,58 +68,52 @@ export default function AptitudeTestPage() {
   } | null>(null);
   const [loadingResult, setLoadingResult] = useState(false);
   const [allTests, setAllTests] = useState([...aptitudeTests]);
-  
-  // Geography questions query
+  const [explanations, setExplanations] = useState<{ [key: string]: string }>({});
+  const [isExplaining, setIsExplaining] = useState<{ [key: string]: boolean }>({});
+
   const { data: geographyQuestions, isLoading: isLoadingGeography } = useQuery({
     queryKey: ['geographyQuestions'],
     queryFn: fetchGeographyQuestions,
     enabled: searchParams.get('test') === 'geography' || selectedTest?.id === 'geography',
-    staleTime: 1000 * 60 * 5 // 5 minutes
+    staleTime: 1000 * 60 * 5
   });
-  
+
   useEffect(() => {
-    // Add geography test to all tests once we have data
     if (geographyQuestions && geographyQuestions.length > 0) {
       const updatedGeographyTest = {
         ...geographyTest,
         questions: geographyQuestions
       };
-      
-      // Update allTests with the geography test if it doesn't exist
+
       if (!allTests.some(test => test.id === 'geography')) {
         setAllTests(prev => [...prev, updatedGeographyTest]);
       } else {
-        // Update the existing geography test with new questions
         setAllTests(prev => 
           prev.map(test => test.id === 'geography' ? updatedGeographyTest : test)
         );
       }
-      
-      // If geography test is selected, update the test questions
+
       if (selectedTest?.id === 'geography') {
         const randomQuestions = getRandomQuestions(geographyQuestions, 5);
         setTestQuestions(randomQuestions);
       }
     }
   }, [geographyQuestions]);
-  
-  // Redirect if no user or wrong user type
+
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
-  
+
   if (currentUser.role !== "user") {
     return <Navigate to="/organization-dashboard" replace />;
   }
 
-  // Check if a test is selected from URL
   useEffect(() => {
     const testId = searchParams.get('test');
     if (testId) {
       const test = allTests.find(t => t.id === testId);
       if (test) {
         setSelectedTest(test);
-        // Get 5 random questions from the test's question pool
         if (test.id === 'geography' && geographyQuestions) {
           const randomQuestions = getRandomQuestions(geographyQuestions, 5);
           setTestQuestions(randomQuestions);
@@ -133,11 +125,10 @@ export default function AptitudeTestPage() {
     }
   }, [searchParams, allTests, geographyQuestions]);
 
-  // Initialize timer when test starts
   useEffect(() => {
     if (selectedTest && testActive && !testFinished) {
-      setTimeLeft(selectedTest.timeLimit * 60); // Convert minutes to seconds
-      
+      setTimeLeft(selectedTest.timeLimit * 60);
+
       const timer = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
@@ -148,7 +139,7 @@ export default function AptitudeTestPage() {
           return prev - 1;
         });
       }, 1000);
-      
+
       return () => clearInterval(timer);
     }
   }, [selectedTest, testActive, testFinished]);
@@ -162,8 +153,7 @@ export default function AptitudeTestPage() {
   const selectTest = (test: AptitudeTest) => {
     setSelectedTest(test);
     setSearchParams({ test: test.id });
-    
-    // Get 5 random questions from the test's question pool
+
     if (test.id === 'geography' && geographyQuestions) {
       const randomQuestions = getRandomQuestions(geographyQuestions, 5);
       setTestQuestions(randomQuestions);
@@ -171,7 +161,7 @@ export default function AptitudeTestPage() {
       const randomQuestions = getRandomQuestions(test.questions, 5);
       setTestQuestions(randomQuestions);
     }
-    
+
     setSelectedAnswers({});
     setCurrentQuestion(0);
     setTestFinished(false);
@@ -207,7 +197,6 @@ export default function AptitudeTestPage() {
     
     setLoadingResult(true);
     
-    // Calculate result
     setTimeout(() => {
       let correctAnswers = 0;
       
@@ -238,7 +227,6 @@ export default function AptitudeTestPage() {
   const resetTest = () => {
     if (!selectedTest) return;
     
-    // Get new random questions for the same test
     if (selectedTest.id === 'geography' && geographyQuestions) {
       const randomQuestions = getRandomQuestions(geographyQuestions, 5);
       setTestQuestions(randomQuestions);
@@ -252,6 +240,36 @@ export default function AptitudeTestPage() {
     setTestFinished(false);
     setTestActive(false);
     setTestResult(null);
+  };
+
+  const getExplanation = async (questionId: string, question: string, correctAnswer: string) => {
+    if (explanations[questionId]) {
+      return;
+    }
+
+    setIsExplaining((prev) => ({
+      ...prev,
+      [questionId]: true
+    }));
+
+    try {
+      const explanation = await explainAptitudeAnswer(question, correctAnswer);
+      
+      setExplanations((prev) => ({
+        ...prev,
+        [questionId]: explanation
+      }));
+      
+      toast.success("Explanation generated successfully!");
+    } catch (error) {
+      toast.error("Failed to generate explanation. Please try again.");
+      console.error("Explanation error:", error);
+    } finally {
+      setIsExplaining((prev) => ({
+        ...prev,
+        [questionId]: false
+      }));
+    }
   };
 
   const renderTestSelection = () => {
@@ -500,6 +518,7 @@ export default function AptitudeTestPage() {
               <div className="space-y-4">
                 {testQuestions.map((question, idx) => {
                   const isCorrect = selectedAnswers[question.id] === question.correctAnswer;
+                  const questionId = question.id;
                   
                   return (
                     <div key={idx} className={`p-4 border rounded-md ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
@@ -523,6 +542,45 @@ export default function AptitudeTestPage() {
                             {question.explanation}
                           </div>
                         )}
+                        
+                        <div className="mt-3">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-1"
+                            onClick={() => getExplanation(questionId, question.question, question.correctAnswer)}
+                            disabled={isExplaining[questionId]}
+                          >
+                            {isExplaining[questionId] ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Generating Explanation...
+                              </>
+                            ) : explanations[questionId] ? (
+                              <>
+                                <LightbulbIcon className="h-4 w-4 text-yellow-500" />
+                                Show AI Explanation
+                              </>
+                            ) : (
+                              <>
+                                <Search className="h-4 w-4" />
+                                Get AI Explanation
+                              </>
+                            )}
+                          </Button>
+                          
+                          {explanations[questionId] && (
+                            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                              <div className="flex items-center gap-1 mb-2">
+                                <LightbulbIcon className="h-5 w-5 text-yellow-500" />
+                                <h4 className="font-medium">AI-Generated Explanation:</h4>
+                              </div>
+                              <div className="text-sm whitespace-pre-line">
+                                {explanations[questionId]}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
