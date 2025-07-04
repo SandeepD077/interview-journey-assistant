@@ -1,0 +1,38 @@
+<svg width="400" height="500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="500" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  
+  <!-- Angled header -->
+  <polygon points="0,0 400,0 400,100 0,120" fill="#dc2626"/>
+  <rect x="40" y="30" width="200" height="20" fill="#ffffff"/>
+  <rect x="40" y="60" width="150" height="8" fill="#fecaca"/>
+  
+  <!-- Dynamic sections with angles -->
+  <polygon points="30,140 370,130 370,180 30,190" fill="#b91c1c" fill-opacity="0.1"/>
+  <rect x="40" y="150" width="120" height="15" fill="#dc2626"/>
+  <rect x="40" y="170" width="300" height="8" fill="#d1d5db"/>
+  
+  <!-- Metrics/achievement boxes -->
+  <rect x="40" y="220" width="80" height="60" fill="#dc2626" fill-opacity="0.1" stroke="#dc2626"/>
+  <rect x="50" y="235" width="60" height="12" fill="#dc2626"/>
+  <rect x="50" y="255" width="40" height="8" fill="#b91c1c"/>
+  
+  <rect x="140" y="220" width="80" height="60" fill="#dc2626" fill-opacity="0.1" stroke="#dc2626"/>
+  <rect x="150" y="235" width="60" height="12" fill="#dc2626"/>
+  <rect x="150" y="255" width="50" height="8" fill="#b91c1c"/>
+  
+  <rect x="240" y="220" width="80" height="60" fill="#dc2626" fill-opacity="0.1" stroke="#dc2626"/>
+  <rect x="250" y="235" width="60" height="12" fill="#dc2626"/>
+  <rect x="250" y="255" width="45" height="8" fill="#b91c1c"/>
+  
+  <!-- Experience section -->
+  <rect x="40" y="320" width="140" height="15" fill="#dc2626"/>
+  <rect x="40" y="350" width="300" height="8" fill="#d1d5db"/>
+  <rect x="40" y="365" width="280" height="8" fill="#d1d5db"/>
+  <rect x="40" y="380" width="250" height="8" fill="#d1d5db"/>
+  
+  <!-- Innovation/Projects -->
+  <rect x="40" y="420" width="120" height="15" fill="#dc2626"/>
+  <rect x="40" y="450" width="280" height="6" fill="#d1d5db"/>
+  
+  <text x="200" y="485" text-anchor="middle" font-family="Arial" font-size="12" fill="#dc2626" font-weight="bold">Startup Innovator</text>
+</svg>

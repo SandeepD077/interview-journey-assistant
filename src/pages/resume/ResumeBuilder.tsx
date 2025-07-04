@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
+import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { defaultResumeData, ResumeFormData, resumeTemplates } from "@/data/resumeTemplates";
@@ -218,7 +219,7 @@ export default function ResumeBuilder() {
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${formData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.txt`;
+      link.download = `${formData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
       document.body.appendChild(link);
       link.click();
       
@@ -319,10 +320,40 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
               </Button>
             </Link>
             <div>
-              <Heading 
-                title="Resume Builder" 
-                description={`Building ${selectedTemplate.name} template`}
-              />
+              <div className="flex items-center gap-3 mb-2">
+                <Heading 
+                  title="Resume Builder" 
+                  description={`Building with ${selectedTemplate.name} template`}
+                />
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant="outline" 
+                    style={{ 
+                      borderColor: selectedTemplate.colors.primary,
+                      color: selectedTemplate.colors.primary 
+                    }}
+                  >
+                    {selectedTemplate.category}
+                  </Badge>
+                  <div className="flex gap-1">
+                    <div 
+                      className="w-4 h-4 rounded-full border"
+                      style={{ backgroundColor: selectedTemplate.colors.primary }}
+                      title="Primary color"
+                    />
+                    <div 
+                      className="w-4 h-4 rounded-full border"
+                      style={{ backgroundColor: selectedTemplate.colors.secondary }}
+                      title="Secondary color"
+                    />
+                    <div 
+                      className="w-4 h-4 rounded-full border"
+                      style={{ backgroundColor: selectedTemplate.colors.accent }}
+                      title="Accent color"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -338,16 +369,27 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
               )}
             </Button>
             
-            <Button onClick={generatePDF} disabled={loading}>
-              {loading ? (
-                <>Generating...</>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download PDF
-                </>
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={generatePDF} disabled={loading}>
+                {loading ? (
+                  <>Generating...</>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
+                  </>
+                )}
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => window.print()} 
+                disabled={loading}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Print
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -913,16 +955,27 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                   )}
                 </Button>
                 
-                <Button onClick={generatePDF} disabled={loading}>
-                  {loading ? (
-                    <>Generating...</>
-                  ) : (
-                    <>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download PDF
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={generatePDF} disabled={loading}>
+                    {loading ? (
+                      <>Generating...</>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download PDF
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.print()} 
+                    disabled={loading}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Print
+                  </Button>
+                </div>
               </CardFooter>
             </Card>
           </div>
