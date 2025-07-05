@@ -3,24 +3,267 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>interview-journey-assistant</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <title>Interview Express - Land Your Dream Job</title>
+    <meta name="description" content="The all-in-one platform to prepare and ace your technical interviews" />
+    <meta name="author" content="Interview Express" />
 
-    <meta property="og:title" content="Lovable Generated Project" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <meta property="og:title" content="Interview Express - Land Your Dream Job" />
+    <meta property="og:description" content="The all-in-one platform to prepare and ace your technical interviews" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   </head>
 
   <body>
-    <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Header -->
+    <header class="header">
+      <div class="container">
+        <div class="nav-content">
+          <div class="nav-brand">
+            <a href="#" class="logo">Interview Express</a>
+          </div>
+          
+          <!-- Desktop Navigation -->
+          <nav class="nav-desktop">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#about" class="nav-link">About</a>
+            <a href="#" class="btn btn-outline">Log in</a>
+            <a href="#" class="btn btn-primary">Sign up</a>
+          </nav>
+          
+          <!-- Mobile Menu Button -->
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i data-lucide="menu"></i>
+          </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div class="nav-mobile" id="mobileNav">
+          <a href="#features" class="nav-link-mobile">Features</a>
+          <a href="#about" class="nav-link-mobile">About</a>
+          <div class="mobile-buttons">
+            <a href="#" class="btn btn-outline btn-full">Log in</a>
+            <a href="#" class="btn btn-primary btn-full">Sign up</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="container">
+          <div class="hero-content">
+            <h1 class="hero-title">Land Your Dream Job with Interview Express</h1>
+            <p class="hero-subtitle">The all-in-one platform to prepare and ace your technical interviews</p>
+            <div class="hero-buttons">
+              <a href="#" class="btn btn-primary btn-lg">Get Started</a>
+              <a href="#features" class="btn btn-secondary btn-lg">Learn More</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="features-section" id="features">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Prepare for interviews with confidence</h2>
+            <p class="section-description">Everything you need to succeed in technical interviews</p>
+          </div>
+          
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i data-lucide="file-text"></i>
+              </div>
+              <h3 class="feature-title">Resume Builder</h3>
+              <p class="feature-description">Create professional, ATS-optimized resumes with multiple templates and AI-powered feedback.</p>
+            </div>
+            
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i data-lucide="book-open"></i>
+              </div>
+              <h3 class="feature-title">Aptitude Testing</h3>
+              <p class="feature-description">Practice with quantitative, logical, verbal, and data interpretation questions.</p>
+            </div>
+            
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i data-lucide="code"></i>
+              </div>
+              <h3 class="feature-title">DSA Practice</h3>
+              <p class="feature-description">Solve coding challenges similar to those asked in technical interviews.</p>
+            </div>
+            
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i data-lucide="mic"></i>
+              </div>
+              <h3 class="feature-title">AI Mock Interviews</h3>
+              <p class="feature-description">Simulate real interview experiences with our AI interviewer.</p>
+            </div>
+            
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i data-lucide="award"></i>
+              </div>
+              <h3 class="feature-title">Learning Resources</h3>
+              <p class="feature-description">Access curated study materials based on your performance and needs.</p>
+            </div>
+            
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i data-lucide="bar-chart"></i>
+              </div>
+              <h3 class="feature-title">Performance Analytics</h3>
+              <p class="feature-description">Track your progress and identify areas for improvement.</p>
+            </div>
+          </div>
+          
+          <div class="section-cta">
+            <a href="#" class="btn btn-primary btn-lg">View All Features</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works Section -->
+      <section class="how-it-works-section">
+        <div class="container">
+          <div class="how-it-works-content">
+            <div class="how-it-works-text">
+              <h2 class="section-title">How Interview Express Works</h2>
+              <p class="section-description">A streamlined process to help you prepare for your next interview</p>
+              
+              <div class="steps">
+                <div class="step">
+                  <div class="step-number">1</div>
+                  <div class="step-content">
+                    <h3 class="step-title">Create your resume</h3>
+                    <p class="step-description">Build a professional resume with our templates and get AI-powered feedback.</p>
+                  </div>
+                </div>
+                
+                <div class="step">
+                  <div class="step-number">2</div>
+                  <div class="step-content">
+                    <h3 class="step-title">Practice with tests</h3>
+                    <p class="step-description">Take aptitude tests and solve coding challenges to strengthen your skills.</p>
+                  </div>
+                </div>
+                
+                <div class="step">
+                  <div class="step-number">3</div>
+                  <div class="step-content">
+                    <h3 class="step-title">Simulate interviews</h3>
+                    <p class="step-description">Participate in AI-powered mock interviews with real-time feedback.</p>
+                  </div>
+                </div>
+                
+                <div class="step">
+                  <div class="step-number">4</div>
+                  <div class="step-content">
+                    <h3 class="step-title">Improve and succeed</h3>
+                    <p class="step-description">Use analytics and learning resources to continuously improve your skills.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="steps-cta">
+                <a href="#" class="btn btn-primary btn-lg">Start Your Journey</a>
+              </div>
+            </div>
+            
+            <div class="how-it-works-image">
+              <div class="stats-card">
+                <img src="https://images.unsplash.com/photo-1573497491765-dccce02b29df?q=80&w=1974&auto=format&fit=crop" alt="Person in interview" class="stats-image">
+                <div class="stats-content">
+                  <div class="stat-item">
+                    <i data-lucide="check-circle" class="stat-icon"></i>
+                    <p class="stat-text"><strong>90%</strong> of users report increased interview confidence</p>
+                  </div>
+                  <div class="stat-item">
+                    <i data-lucide="check-circle" class="stat-icon"></i>
+                    <p class="stat-text"><strong>75%</strong> of users improve their technical interview skills within 2 weeks</p>
+                  </div>
+                  <div class="stat-item">
+                    <i data-lucide="check-circle" class="stat-icon"></i>
+                    <p class="stat-text"><strong>40%</strong> higher job offer rate compared to unprepared candidates</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Section -->
+      <section class="cta-section">
+        <div class="container">
+          <div class="cta-content">
+            <h2 class="cta-title">Ready to ace your next interview?</h2>
+            <p class="cta-description">Join thousands of job seekers who have successfully landed their dream jobs with Interview Express.</p>
+            <div class="cta-buttons">
+              <a href="#" class="btn btn-white btn-lg">Sign Up For Free</a>
+              <a href="#" class="btn btn-outline-white btn-lg">Log In</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3 class="footer-title">Interview Express</h3>
+            <p class="footer-description">Helping job seekers ace their interviews and land their dream jobs.</p>
+          </div>
+          
+          <div class="footer-section">
+            <h4 class="footer-heading">Product</h4>
+            <ul class="footer-links">
+              <li><a href="#features">Features</a></li>
+              <li><a href="#pricing">Pricing</a></li>
+              <li><a href="#testimonials">Testimonials</a></li>
+            </ul>
+          </div>
+          
+          <div class="footer-section">
+            <h4 class="footer-heading">Resources</h4>
+            <ul class="footer-links">
+              <li><a href="#help">Help Center</a></li>
+              <li><a href="#blog">Blog</a></li>
+              <li><a href="#contact">Contact Us</a></li>
+            </ul>
+          </div>
+          
+          <div class="footer-section">
+            <h4 class="footer-heading">Legal</h4>
+            <ul class="footer-links">
+              <li><a href="#privacy">Privacy Policy</a></li>
+              <li><a href="#terms">Terms of Service</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer-bottom">
+          <p>&copy; 2024 Interview Express. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
   </body>
 </html>

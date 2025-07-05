@@ -1,69 +1,134 @@
-# Welcome to your Lovable project
+# Interview Express - Vanilla HTML/CSS/JavaScript Version
 
-## Project info
+This is a converted version of the Interview Express React/TypeScript application, now using vanilla HTML, CSS, and JavaScript.
 
-**URL**: https://lovable.dev/projects/f42bc1f5-4897-48cd-8ea8-c20219f876b5
+## What was converted
 
-## How can I edit this code?
+The original React application included:
+- React components with TypeScript
+- Tailwind CSS for styling
+- React Router for navigation
+- Various UI components and context providers
 
-There are several ways of editing your application.
+The converted version includes:
+- **index.html** - Complete HTML structure with semantic markup
+- **styles.css** - Comprehensive CSS with custom properties and responsive design
+- **script.js** - JavaScript for interactivity and animations
 
-**Use Lovable**
+## Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f42bc1f5-4897-48cd-8ea8-c20219f876b5) and start prompting.
+### 🎯 Responsive Design
+- Mobile-first approach with responsive navigation
+- Optimized for desktop, tablet, and mobile devices
+- Smooth animations and transitions
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🎨 Modern UI
+- Clean, professional design
+- Consistent color scheme using CSS custom properties
+- Hover effects and smooth transitions
+- Card-based layout for features
 
-**Use your preferred IDE**
+### ⚡ Performance
+- Lightweight vanilla JavaScript
+- Optimized CSS with minimal dependencies
+- Smooth scrolling and intersection observer animations
+- Debounced scroll handlers for performance
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🔧 Interactive Elements
+- Mobile hamburger menu
+- Smooth scrolling navigation
+- Fade-in animations for cards and sections
+- Button click tracking (ready for analytics)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Key Sections
 
-Follow these steps:
+1. **Header** - Sticky navigation with mobile menu
+2. **Hero Section** - Eye-catching intro with call-to-action buttons
+3. **Features Section** - Six feature cards with icons and descriptions
+4. **How It Works** - Step-by-step process with statistics
+5. **CTA Section** - Final call-to-action with prominent buttons
+6. **Footer** - Links and company information
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Technical Details
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### CSS Features
+- CSS Custom Properties (CSS Variables) for theming
+- Flexbox and CSS Grid for layout
+- Responsive design with mobile-first approach
+- Smooth transitions and hover effects
+- Intersection Observer animations
 
-# Step 3: Install the necessary dependencies.
-npm i
+### JavaScript Features
+- Mobile menu toggle functionality
+- Smooth scrolling for anchor links
+- Intersection Observer for fade-in animations
+- Header scroll effects
+- Event tracking capabilities
+- Utility functions for common tasks
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### Dependencies
+- **Lucide Icons** - For consistent iconography
+- **Inter Font** - For modern typography
+
+## Usage
+
+1. Simply open `index.html` in a web browser
+2. No build process required
+3. All files are self-contained and work offline
+
+## Browser Support
+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- IE11+ (with some limitations)
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Customization
+
+### Colors
+Edit the CSS custom properties in `styles.css`:
+
+```css
+:root {
+    --primary: hsl(221.2, 83%, 53.9%);
+    --secondary: hsl(210, 40%, 96.1%);
+    --accent: hsl(24, 96%, 53%);
+    /* ... other colors */
+}
 ```
 
-**Edit a file directly in GitHub**
+### Content
+Update the HTML content in `index.html` to match your needs.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Functionality
+Add new JavaScript features in `script.js` or create additional JS files.
 
-**Use GitHub Codespaces**
+## Original vs Converted
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+| Feature | Original (React) | Converted (Vanilla) |
+|---------|------------------|-------------------|
+| Routing | React Router | Anchor links |
+| State Management | React Context | DOM manipulation |
+| Styling | Tailwind CSS | Custom CSS |
+| Icons | Lucide React | Lucide Web |
+| Build Process | Vite/TypeScript | None required |
+| Bundle Size | ~500KB+ | ~50KB |
 
-## What technologies are used for this project?
+## Performance Benefits
 
-This project is built with .
+- **Faster Loading**: No React runtime or build artifacts
+- **Smaller Bundle**: Significantly reduced file size
+- **Better SEO**: Server-side rendering not required
+- **Simpler Deployment**: Static files only
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Next Steps
 
-## How can I deploy this project?
+To extend this application:
+1. Add form handling for user registration/login
+2. Integrate with backend APIs
+3. Add more interactive features
+4. Implement actual routing with history API
+5. Add progressive web app features
 
-Simply open [Lovable](https://lovable.dev/projects/f42bc1f5-4897-48cd-8ea8-c20219f876b5) and click on Share -> Publish.
+## License
 
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+This converted version maintains compatibility with the original project structure while providing a lightweight, dependency-free alternative.
