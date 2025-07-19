@@ -1,4 +1,3 @@
-
 // LaTeX template generator for professional resumes
 
 export const generateLatexTemplate = (formData: any, templateId: string): string => {
@@ -21,7 +20,7 @@ export const generateLatexTemplate = (formData: any, templateId: string): string
   } = formData;
 
   // Generate LaTeX document
-  return `\\documentclass[10pt, letterpaper]{article}
+  let latex = `\\documentclass[10pt, letterpaper]{article}
 
 % Packages:
 \\usepackage[
@@ -177,129 +176,248 @@ export const generateLatexTemplate = (formData: any, templateId: string): string
 
         \\vspace{0.3 cm}
 
-        \\normalsize
-        ${personalInfo.address ? `\\mbox{{\\color{black}\\footnotesize\\faMapMarker*}\\hspace*{0.13cm}${personalInfo.address}}%
-        \\kern 0.25 cm%
-        \\AND%
-        \\kern 0.25 cm%` : ''}
-        \\mbox{\\hrefWithoutArrow{mailto:${personalInfo.email}}{{\\color{black}{\\footnotesize\\faEnvelope[regular]}}\\hspace*{0.13cm}${personalInfo.email}}}%
-        \\kern 0.25 cm%
-        \\AND%
-        \\kern 0.25 cm%
-        ${personalInfo.phone ? `\\mbox{\\hrefWithoutArrow{tel:${personalInfo.phone}}{{\\color{black}{\\footnotesize\\faPhone*}}\\hspace*{0.13cm}${personalInfo.phone}}}%
-        \\kern 0.25 cm%
-        \\AND%
-        \\kern 0.25 cm%` : ''}
-        ${personalInfo.website ? `\\mbox{\\hrefWithoutArrow{${personalInfo.website}}{{\\color{black}{\\footnotesize\\faLink}}\\hspace*{0.13cm}${personalInfo.website.replace(/^https?:\\/\\//, '')}}}%
-        \\kern 0.25 cm%
-        \\AND%
-        \\kern 0.25 cm%` : ''}
-        ${personalInfo.linkedin ? `\\mbox{\\hrefWithoutArrow{${personalInfo.linkedin}}{{\\color{black}{\\footnotesize\\faLinkedinIn}}\\hspace*{0.13cm}${personalInfo.linkedin.replace(/^https?:\\/\\/(?:www\\.)?linkedin\\.com\\/in\\//, '')}}}%
-        \\kern 0.25 cm%
-        \\AND%
-        \\kern 0.25 cm%` : ''}
-        ${personalInfo.github ? `\\mbox{\\hrefWithoutArrow{${personalInfo.github}}{{\\color{black}{\\footnotesize\\faGithub}}\\hspace*{0.13cm}${personalInfo.github.replace(/^https?:\\/\\/(?:www\\.)?github\\.com\\//, '')}}}%` : ''}
+        \\normalsize`;
+
+  // Build contact info dynamically
+  const contactInfo = [];
+  
+  if (personalInfo.address) {
+    contactInfo.push(`\\mbox{{\\color{black}\\footnotesize\\faMapMarker*}\\hspace*{0.13cm}${personalInfo.address}}`);
+  }
+  
+  contactInfo.push(`\\mbox{\\hrefWithoutArrow{mailto:${personalInfo.email}}{{\\color{black}{\\footnotesize\\faEnvelope[regular]}}\\hspace*{0.13cm}${personalInfo.email}}}`);
+  
+  if (personalInfo.phone) {
+    contactInfo.push(`\\mbox{\\hrefWithoutArrow{tel:${personalInfo.phone}}{{\\color{black}{\\footnotesize\\faPhone*}}\\hspace*{0.13cm}${personalInfo.phone}}}`);
+  }
+  
+  if (personalInfo.website) {
+    const cleanWebsite = personalInfo.website.replace(/^https?:\/\//, '');
+    contactInfo.push(`\\mbox{\\hrefWithoutArrow{${personalInfo.website}}{{\\color{black}{\\footnotesize\\faLink}}\\hspace*{0.13cm}${cleanWebsite}}}`);
+  }
+  
+  if (personalInfo.linkedin) {
+    const cleanLinkedin = personalInfo.linkedin.replace(/^https?:\/\/(?:www\.)?linkedin\.com\/in\//, '');
+    contactInfo.push(`\\mbox{\\hrefWithoutArrow{${personalInfo.linkedin}}{{\\color{black}{\\footnotesize\\faLinkedinIn}}\\hspace*{0.13cm}${cleanLinkedin}}}`);
+  }
+  
+  if (personalInfo.github) {
+    const cleanGithub = personalInfo.github.replace(/^https?:\/\/(?:www\.)?github\.com\//, '');
+    contactInfo.push(`\\mbox{\\hrefWithoutArrow{${personalInfo.github}}{{\\color{black}{\\footnotesize\\faGithub}}\\hspace*{0.13cm}${cleanGithub}}}`);
+  }
+
+  latex += `
+        ${contactInfo.join('%\n        \\kern 0.25 cm%\n        \\AND%\n        \\kern 0.25 cm%\n        ')}%
     \\end{header}
 
     \\vspace{0.3 cm - 0.3 cm}
+`;
 
-${personalInfo.summary ? `
+  // Professional Summary
+  if (personalInfo.summary) {
+    const cleanSummary = personalInfo.summary
+      .replace(/&/g, '\\&')
+      .replace(/%/g, '\\%')
+      .replace(/#/g, '\\#')
+      .replace(/\n/g, '\\\\\\\\');
+    
+    latex += `
     \\section{Professional Summary}
         
         \\begin{onecolentry}
-            ${personalInfo.summary.replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/#/g, '\\#').replace(/\n/g, '\\\\\\\\')}
+            ${cleanSummary}
         \\end{onecolentry}
-` : ''}
+`;
+  }
 
-${education.some(edu => edu.institution) ? `
-    \\section{Education}
-${education.filter(edu => edu.institution).map((edu, index) => `
-        ${index > 0 ? '\\vspace{0.2 cm}\n' : ''}
+  // Education
+  const validEducation = education.filter(edu => edu.institution);
+  if (validEducation.length > 0) {
+    latex += `
+    \\section{Education}`;
+    
+    validEducation.forEach((edu, index) => {
+      if (index > 0) {
+        latex += '\n        \\vspace{0.2 cm}';
+      }
+      
+      const dateRange = edu.startDate && edu.endDate ? `\\textit{${edu.startDate} – ${edu.endDate}}` : '';
+      const institution = edu.institution.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const degree = edu.degree ? `\\textit{${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}}` : '';
+      
+      latex += `
         \\begin{twocolentry}{
-            ${edu.startDate && edu.endDate ? `\\textit{${edu.startDate} – ${edu.endDate}}` : ''}
+            ${dateRange}
         }
-            \\textbf{${edu.institution.replace(/&/g, '\\&').replace(/%/g, '\\%')}}
+            \\textbf{${institution}}
 
-            ${edu.degree ? `\\textit{${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}}` : ''}
-        \\end{twocolentry}
-        ${edu.gpa || edu.description ? `
+            ${degree}
+        \\end{twocolentry}`;
+        
+      if (edu.gpa || edu.description) {
+        latex += `
         \\vspace{0.10 cm}
         \\begin{onecolentry}
-            \\begin{highlights}
-                ${edu.gpa ? `\\item GPA: ${edu.gpa}` : ''}
-                ${edu.description ? `\\item ${edu.description.replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/#/g, '\\#').replace(/\n/g, '\\\\\\\\')}` : ''}
+            \\begin{highlights}`;
+            
+        if (edu.gpa) {
+          latex += `
+                \\item GPA: ${edu.gpa}`;
+        }
+        
+        if (edu.description) {
+          const cleanDesc = edu.description
+            .replace(/&/g, '\\&')
+            .replace(/%/g, '\\%')
+            .replace(/#/g, '\\#')
+            .replace(/\n/g, '\\\\\\\\');
+          latex += `
+                \\item ${cleanDesc}`;
+        }
+        
+        latex += `
             \\end{highlights}
-        \\end{onecolentry}` : ''}
-`).join('')}
-` : ''}
+        \\end{onecolentry}`;
+      }
+    });
+  }
 
-${experience.some(exp => exp.company) ? `
-    \\section{Experience}
-${experience.filter(exp => exp.company).map((exp, index) => `
-        ${index > 0 ? '\\vspace{0.2 cm}\n' : ''}
+  // Experience
+  const validExperience = experience.filter(exp => exp.company);
+  if (validExperience.length > 0) {
+    latex += `
+    \\section{Experience}`;
+    
+    validExperience.forEach((exp, index) => {
+      if (index > 0) {
+        latex += '\n        \\vspace{0.2 cm}';
+      }
+      
+      const location = exp.location ? `\\textit{${exp.location}}` : '';
+      const dateRange = `\\textit{${exp.startDate}${exp.current ? ' – Present' : exp.endDate ? ` – ${exp.endDate}` : ''}}`;
+      const position = exp.position.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const company = exp.company.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      
+      latex += `
         \\begin{twocolentry}{
-        ${exp.location ? `\\textit{${exp.location}}` : ''}    
+        ${location}    
             
-        \\textit{${exp.startDate}${exp.current ? ' – Present' : exp.endDate ? ` – ${exp.endDate}` : ''}}}
-            \\textbf{${exp.position.replace(/&/g, '\\&').replace(/%/g, '\\%')}}
+        ${dateRange}}
+            \\textbf{${position}}
             
-            \\textit{${exp.company.replace(/&/g, '\\&').replace(/%/g, '\\%')}}
-        \\end{twocolentry}
-        ${exp.description ? `
+            \\textit{${company}}
+        \\end{twocolentry}`;
+        
+      if (exp.description) {
+        const highlights = exp.description
+          .split('\n')
+          .filter(line => line.trim())
+          .map(line => `\\item ${line.trim().replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/#/g, '\\#')}`)
+          .join('\n                ');
+          
+        latex += `
         \\vspace{0.10 cm}
         \\begin{onecolentry}
             \\begin{highlights}
-                ${exp.description
-                  .split('\n')
-                  .filter(line => line.trim())
-                  .map(line => `\\item ${line.trim().replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/#/g, '\\#')}`)
-                  .join('\n                ')}
+                ${highlights}
             \\end{highlights}
-        \\end{onecolentry}` : ''}
-`).join('')}
-` : ''}
+        \\end{onecolentry}`;
+      }
+    });
+  }
 
-${skills.some(skill => skill) ? `
+  // Skills
+  const validSkills = skills.filter(skill => skill);
+  if (validSkills.length > 0) {
+    latex += `
     \\section{Skills}
         
         \\begin{onecolentry}
-            ${skills.filter(s => s.trim()).join(', ')}
+            ${validSkills.filter(s => s.trim()).join(', ')}
         \\end{onecolentry}
-` : ''}
+`;
+  }
 
-${projects.some(proj => proj.title) ? `
-    \\section{Projects}
-${projects.filter(proj => proj.title).map((proj, index) => `
-        ${index > 0 ? '\\vspace{0.2 cm}\n' : ''}
+  // Projects
+  const validProjects = projects.filter(proj => proj.title);
+  if (validProjects.length > 0) {
+    latex += `
+    \\section{Projects}`;
+    
+    validProjects.forEach((proj, index) => {
+      if (index > 0) {
+        latex += '\n        \\vspace{0.2 cm}';
+      }
+      
+      const projectLink = proj.link ? 
+        `\\textit{\\href{${proj.link}}{${proj.link.replace(/^https?:\/\/(?:www\.)?github\.com\//, 'github.com/').replace(/&/g, '\\&').replace(/%/g, '\\%')}}}` : '';
+      const title = proj.title.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      
+      latex += `
         \\begin{twocolentry}{
-            ${proj.link ? `\\textit{\\href{${proj.link}}{${proj.link.replace(/^https?:\\/\\/(?:www\\.)?github\\.com\\//, 'github.com/').replace(/&/g, '\\&').replace(/%/g, '\\%')}}}` : ''}
+            ${projectLink}
         }
-            \\textbf{${proj.title.replace(/&/g, '\\&').replace(/%/g, '\\%')}}
-        \\end{twocolentry}
-        ${proj.description || proj.technologies.some(t => t) ? `
+            \\textbf{${title}}
+        \\end{twocolentry}`;
+        
+      if (proj.description || proj.technologies.some(t => t)) {
+        latex += `
         \\vspace{0.10 cm}
         \\begin{onecolentry}
-            \\begin{highlights}
-                ${proj.description ? `\\item ${proj.description.replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/#/g, '\\#').replace(/\n/g, '\\\\\\\\')}` : ''}
-                ${proj.technologies.some(t => t) ? `\\item \\textbf{Technologies:} ${proj.technologies.filter(t => t.trim()).join(', ').replace(/&/g, '\\&').replace(/%/g, '\\%')}` : ''}
-            \\end{highlights}
-        \\end{onecolentry}` : ''}
-`).join('')}
-` : ''}
-
-${certifications.some(cert => cert.name) ? `
-    \\section{Certifications}
-${certifications.filter(cert => cert.name).map((cert, index) => `
-        ${index > 0 ? '\\vspace{0.2 cm}\n' : ''}
-        \\begin{twocolentry}{
-            ${cert.date}${cert.expiration ? ` - ${cert.expiration}` : ''}
-        }
-            \\textbf{${cert.name.replace(/&/g, '\\&').replace(/%/g, '\\%')}}
+            \\begin{highlights}`;
             
-            \\textit{${cert.issuer.replace(/&/g, '\\&').replace(/%/g, '\\%')}}
-        \\end{twocolentry}
-`).join('')}
-` : ''}
+        if (proj.description) {
+          const cleanDesc = proj.description
+            .replace(/&/g, '\\&')
+            .replace(/%/g, '\\%')
+            .replace(/#/g, '\\#')
+            .replace(/\n/g, '\\\\\\\\');
+          latex += `
+                \\item ${cleanDesc}`;
+        }
+        
+        if (proj.technologies.some(t => t)) {
+          const techs = proj.technologies.filter(t => t.trim()).join(', ').replace(/&/g, '\\&').replace(/%/g, '\\%');
+          latex += `
+                \\item \\textbf{Technologies:} ${techs}`;
+        }
+        
+        latex += `
+            \\end{highlights}
+        \\end{onecolentry}`;
+      }
+    });
+  }
+
+  // Certifications
+  const validCertifications = certifications.filter(cert => cert.name);
+  if (validCertifications.length > 0) {
+    latex += `
+    \\section{Certifications}`;
+    
+    validCertifications.forEach((cert, index) => {
+      if (index > 0) {
+        latex += '\n        \\vspace{0.2 cm}';
+      }
+      
+      const dateRange = `${cert.date}${cert.expiration ? ` - ${cert.expiration}` : ''}`;
+      const name = cert.name.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const issuer = cert.issuer.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      
+      latex += `
+        \\begin{twocolentry}{
+            ${dateRange}
+        }
+            \\textbf{${name}}
+            
+            \\textit{${issuer}}
+        \\end{twocolentry}`;
+    });
+  }
+
+  latex += `
 
 \\end{document}`;
+
+  return latex;
 };
