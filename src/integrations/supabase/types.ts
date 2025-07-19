@@ -14,7 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      interview_attempts: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          feedback: string | null
+          id: string
+          round_name: string
+          round_number: number
+          score: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          round_name: string
+          round_number: number
+          score?: number | null
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          round_name?: string
+          round_number?: number
+          score?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          aptitude_test_score: number | null
+          aptitude_tests_taken: number | null
+          created_at: string
+          dsa_accuracy_percentage: number | null
+          dsa_questions_attempted: number | null
+          dsa_questions_correct: number | null
+          id: string
+          interview_rounds_completed: number | null
+          last_activity_date: string | null
+          resume_completion_percentage: number | null
+          total_interview_rounds: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aptitude_test_score?: number | null
+          aptitude_tests_taken?: number | null
+          created_at?: string
+          dsa_accuracy_percentage?: number | null
+          dsa_questions_attempted?: number | null
+          dsa_questions_correct?: number | null
+          id?: string
+          interview_rounds_completed?: number | null
+          last_activity_date?: string | null
+          resume_completion_percentage?: number | null
+          total_interview_rounds?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aptitude_test_score?: number | null
+          aptitude_tests_taken?: number | null
+          created_at?: string
+          dsa_accuracy_percentage?: number | null
+          dsa_questions_attempted?: number | null
+          dsa_questions_correct?: number | null
+          id?: string
+          interview_rounds_completed?: number | null
+          last_activity_date?: string | null
+          resume_completion_percentage?: number | null
+          total_interview_rounds?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

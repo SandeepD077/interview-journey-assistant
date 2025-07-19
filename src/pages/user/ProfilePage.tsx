@@ -19,6 +19,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heading } from "@/components/ui/heading";
+import { ProgressDashboard } from "@/components/profile/ProgressDashboard";
 
 export default function ProfilePage() {
   const { currentUser, isLoading } = useAuth();
@@ -108,12 +109,17 @@ export default function ProfilePage() {
                   <CardDescription>Update your profile information and password</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Tabs defaultValue="profile" className="w-full">
+                  <Tabs defaultValue="progress" className="w-full">
                     <TabsList className="mb-4">
+                      <TabsTrigger value="progress">Progress Dashboard</TabsTrigger>
                       <TabsTrigger value="profile">Profile Information</TabsTrigger>
                       <TabsTrigger value="password">Change Password</TabsTrigger>
                       <TabsTrigger value="preferences">Preferences</TabsTrigger>
                     </TabsList>
+                    
+                    <TabsContent value="progress">
+                      <ProgressDashboard />
+                    </TabsContent>
                     
                     <TabsContent value="profile">
                       <form onSubmit={handleUpdateProfile} className="space-y-4">
