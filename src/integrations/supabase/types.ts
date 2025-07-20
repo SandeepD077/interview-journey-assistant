@@ -53,6 +53,57 @@ export type Database = {
         }
         Relationships: []
       }
+      resumes: {
+        Row: {
+          certifications: Json
+          completion_percentage: number | null
+          created_at: string
+          education: Json
+          experience: Json
+          id: string
+          is_active: boolean
+          personal_info: Json
+          projects: Json
+          skills: Json
+          template_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certifications?: Json
+          completion_percentage?: number | null
+          created_at?: string
+          education?: Json
+          experience?: Json
+          id?: string
+          is_active?: boolean
+          personal_info: Json
+          projects?: Json
+          skills?: Json
+          template_id: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certifications?: Json
+          completion_percentage?: number | null
+          created_at?: string
+          education?: Json
+          experience?: Json
+          id?: string
+          is_active?: boolean
+          personal_info?: Json
+          projects?: Json
+          skills?: Json
+          template_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null
@@ -136,7 +187,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_resume_completion: {
+        Args: { resume_data: Json }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { defaultResumeData, ResumeFormData, resumeTemplates } from "@/data/resumeTemplates";
 import { analyzeResume } from "@/services/geminiService";
+import { useResume } from "@/hooks/useResume";
 import { 
   PlusCircle, 
   MinusCircle, 
@@ -31,7 +32,6 @@ export default function ResumeBuilder() {
   const { templateId } = useParams();
   const [formData, setFormData] = useState<ResumeFormData>(defaultResumeData);
   const [loading, setLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<{
     score: number;
@@ -39,6 +39,7 @@ export default function ResumeBuilder() {
     analysis: string;
   } | null>(null);
   
+  const { resume, loading: resumeLoading, saving: isSaving, saveResume, getFormData } = useResume(templateId || '');
   const selectedTemplate = resumeTemplates.find(t => t.id === templateId);
   
   if (!currentUser) {
@@ -195,18 +196,8 @@ export default function ResumeBuilder() {
     });
   };
   
-  const saveResume = () => {
-    setIsSaving(true);
-    
-    setTimeout(() => {
-      localStorage.setItem('savedResume', JSON.stringify({
-        templateId,
-        formData
-      }));
-      
-      setIsSaving(false);
-      toast.success("Resume saved successfully!");
-    }, 1000);
+  const handleSaveResume = async () => {
+    await saveResume(formData, `${selectedTemplate.name} Resume`);
   };
   
   const generatePDF = async () => {
@@ -294,19 +285,37 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
     }
   };
   
+  // Load data from Supabase when available
   useEffect(() => {
-    const savedResume = localStorage.getItem('savedResume');
-    if (savedResume) {
-      try {
-        const { templateId: savedTemplateId, formData: savedFormData } = JSON.parse(savedResume);
-        if (savedTemplateId === templateId) {
-          setFormData(savedFormData);
+    const supabaseData = getFormData();
+    if (supabaseData) {
+      setFormData(supabaseData);
+    } else {
+      // Fallback to localStorage for backwards compatibility
+      const savedResume = localStorage.getItem('savedResume');
+      if (savedResume) {
+        try {
+          const { templateId: savedTemplateId, formData: savedFormData } = JSON.parse(savedResume);
+          if (savedTemplateId === templateId) {
+            setFormData(savedFormData);
+          }
+        } catch (error) {
+          console.error("Error loading saved resume:", error);
         }
-      } catch (error) {
-        console.error("Error loading saved resume:", error);
       }
     }
-  }, [templateId]);
+  }, [templateId, getFormData]);
+
+  // Auto-save to Supabase when form data changes
+  useEffect(() => {
+    if (!resumeLoading && formData !== defaultResumeData) {
+      const autoSaveTimer = setTimeout(() => {
+        handleSaveResume();
+      }, 2000); // Auto-save after 2 seconds of inactivity
+
+      return () => clearTimeout(autoSaveTimer);
+    }
+  }, [formData, resumeLoading]);
 
   return (
     <DashboardLayout>
@@ -327,7 +336,7 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" onClick={saveResume} disabled={isSaving}>
+            <Button variant="outline" onClick={handleSaveResume} disabled={isSaving}>
               {isSaving ? (
                 <>Saving...</>
               ) : (
@@ -902,7 +911,7 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                 </Tabs>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={saveResume} disabled={isSaving}>
+                <Button variant="outline" onClick={handleSaveResume} disabled={isSaving}>
                   {isSaving ? (
                     <>Saving...</>
                   ) : (
