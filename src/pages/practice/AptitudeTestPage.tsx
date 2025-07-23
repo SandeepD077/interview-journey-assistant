@@ -192,12 +192,12 @@ export default function AptitudeTestPage() {
     }
   };
 
-  const finishTest = () => {
+  const finishTest = async () => {
     if (!selectedTest || !testQuestions.length) return;
     
     setLoadingResult(true);
     
-    setTimeout(() => {
+    try {
       let correctAnswers = 0;
       
       testQuestions.forEach(question => {
@@ -209,6 +209,20 @@ export default function AptitudeTestPage() {
       const score = Math.round((correctAnswers / testQuestions.length) * 100);
       const timeTaken = selectedTest.timeLimit * 60 - timeLeft;
       
+      // Save result to Supabase
+      const { saveAptitudeTestResult } = await import('@/services/aptitudeTestService');
+      
+      await saveAptitudeTestResult({
+        user_id: currentUser.id,
+        category_name: selectedTest.title,
+        questions_data: testQuestions,
+        answers: selectedAnswers,
+        score,
+        correct_answers: correctAnswers,
+        total_questions: testQuestions.length,
+        time_taken_seconds: timeTaken
+      });
+      
       setTestResult({
         score,
         correctAnswers,
@@ -218,10 +232,14 @@ export default function AptitudeTestPage() {
       
       setTestFinished(true);
       setTestActive(false);
-      setLoadingResult(false);
       
-      toast.success("Test completed! See your results below.");
-    }, 1500);
+      toast.success("Test completed and progress saved!");
+    } catch (error) {
+      console.error('Error saving test result:', error);
+      toast.error("Test completed but failed to save progress.");
+    } finally {
+      setLoadingResult(false);
+    }
   };
 
   const resetTest = () => {

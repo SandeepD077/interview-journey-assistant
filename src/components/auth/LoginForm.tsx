@@ -51,13 +51,23 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      await login(data.email.trim().toLowerCase(), data.password);
       
       // The navigation will be handled by the useEffect in the LoginPage.tsx
       toast.success("Logged in successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      toast.error("Invalid email or password. Please try again.");
+      
+      // Handle specific Supabase auth errors
+      if (error?.message?.includes('Invalid login credentials')) {
+        toast.error("Invalid email or password. Please check your credentials and try again.");
+      } else if (error?.message?.includes('Email not confirmed')) {
+        toast.error("Please check your email and click the confirmation link before logging in.");
+      } else if (error?.message?.includes('Too many requests')) {
+        toast.error("Too many login attempts. Please wait a moment and try again.");
+      } else {
+        toast.error("Login failed. Please check your credentials and try again.");
+      }
     } finally {
       setIsLoading(false);
     }

@@ -164,6 +164,22 @@ export default function DSAPracticePage() {
       const success = Math.random() > 0.3;
       const executionTime = Math.random() * 0.2 + 0.1;
       
+      // Save DSA practice result to Supabase
+      const { saveDSAPracticeResult } = await import('@/services/dsaPracticeService');
+      
+      const startTime = Date.now();
+      await saveDSAPracticeResult({
+        user_id: currentUser.id,
+        question_id: selectedQuestion.id,
+        question_title: selectedQuestion.title,
+        difficulty: selectedQuestion.difficulty,
+        category: selectedQuestion.category,
+        is_correct: success,
+        solution_code: code,
+        language,
+        time_taken_seconds: Math.floor((Date.now() - startTime) / 1000)
+      });
+      
       if (success) {
         setResult({
           success: true,
@@ -171,7 +187,7 @@ export default function DSAPracticePage() {
           feedback: response.text || "Your solution is correct and efficient.",
           executionTime,
         });
-        toast.success("Solution submitted successfully!");
+        toast.success("Solution submitted and progress saved!");
       } else {
         setResult({
           success: false,
@@ -179,7 +195,7 @@ export default function DSAPracticePage() {
           feedback: response.text || "There are some issues with your solution that need to be fixed.",
           executionTime,
         });
-        toast.error("Solution has some issues.");
+        toast.error("Solution has issues, but progress saved.");
       }
     } catch (error) {
       console.error("Error submitting code:", error);

@@ -4,8 +4,44 @@ import { Badge } from "@/components/ui/badge";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { AlertCircle, CheckCircle, Clock, Trophy, Target, BookOpen, Brain, FileText } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ProgressTracker } from "@/components/profile/ProgressTracker";
 
 export function ProgressDashboard() {
+  const { progress, interviewAttempts, loading, error } = useUserProgress();
+
+  // Include the new ProgressTracker component
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-2 text-sm text-muted-foreground">Loading progress...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>
+          Error loading progress data: {typeof error === 'string' ? error : 'Unknown error'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <ProgressTracker />
+      <OriginalProgressContent />
+    </div>
+  );
+}
+
+function OriginalProgressContent() {
   const { progress, interviewAttempts, loading, error } = useUserProgress();
 
   if (loading) {

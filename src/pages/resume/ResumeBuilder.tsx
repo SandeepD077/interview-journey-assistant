@@ -209,7 +209,7 @@ export default function ResumeBuilder() {
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${formData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.txt`;
+      link.download = `${formData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
       document.body.appendChild(link);
       link.click();
       
