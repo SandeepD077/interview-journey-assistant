@@ -14,6 +14,130 @@ export type Database = {
   }
   public: {
     Tables: {
+      aptitude_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          time_limit_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          time_limit_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          time_limit_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      aptitude_questions: {
+        Row: {
+          category_id: string
+          correct_answer: string
+          created_at: string
+          difficulty_level: string | null
+          explanation: string | null
+          id: string
+          is_active: boolean
+          options: Json
+          question_text: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          correct_answer: string
+          created_at?: string
+          difficulty_level?: string | null
+          explanation?: string | null
+          id?: string
+          is_active?: boolean
+          options: Json
+          question_text: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          correct_answer?: string
+          created_at?: string
+          difficulty_level?: string | null
+          explanation?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aptitude_questions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "aptitude_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aptitude_test_attempts: {
+        Row: {
+          answers: Json
+          category_id: string
+          completed_at: string
+          correct_answers: number
+          created_at: string
+          id: string
+          questions_data: Json
+          score: number
+          time_taken_seconds: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          category_id: string
+          completed_at?: string
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          questions_data: Json
+          score: number
+          time_taken_seconds?: number
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          category_id?: string
+          completed_at?: string
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          questions_data?: Json
+          score?: number
+          time_taken_seconds?: number
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aptitude_test_attempts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "aptitude_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interview_attempts: {
         Row: {
           completed_at: string | null
@@ -190,6 +314,30 @@ export type Database = {
       calculate_resume_completion: {
         Args: { resume_data: Json }
         Returns: number
+      }
+      get_random_aptitude_questions: {
+        Args: { category_name: string; question_count?: number }
+        Returns: {
+          id: string
+          question_text: string
+          options: Json
+          correct_answer: string
+          explanation: string
+          difficulty_level: string
+        }[]
+      }
+      save_aptitude_test_result: {
+        Args: {
+          p_user_id: string
+          p_category_name: string
+          p_questions_data: Json
+          p_answers: Json
+          p_score: number
+          p_correct_answers: number
+          p_total_questions: number
+          p_time_taken_seconds: number
+        }
+        Returns: string
       }
     }
     Enums: {
