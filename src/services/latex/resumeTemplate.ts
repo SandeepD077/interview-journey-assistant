@@ -19,6 +19,19 @@ export const generateLatexTemplate = (formData: any, templateId: string): string
     certifications
   } = formData;
 
+  // Generate different templates based on templateId
+  switch (templateId) {
+    case 'modern':
+      return generateModernTemplate(formData, personalInfo, education, experience, skills, projects, certifications, lastUpdated);
+    case 'creative':
+      return generateCreativeTemplate(formData, personalInfo, education, experience, skills, projects, certifications, lastUpdated);
+    case 'professional':
+    default:
+      return generateProfessionalTemplate(formData, personalInfo, education, experience, skills, projects, certifications, lastUpdated);
+  }
+};
+
+const generateProfessionalTemplate = (formData: any, personalInfo: any, education: any, experience: any, skills: any, projects: any, certifications: any, lastUpdated: string): string => {
   // Generate LaTeX document
   let latex = `\\documentclass[10pt, letterpaper]{article}
 
@@ -416,6 +429,391 @@ export const generateLatexTemplate = (formData: any, templateId: string): string
   }
 
   latex += `
+
+\\end{document}`;
+
+  return latex;
+};
+
+const generateModernTemplate = (formData: any, personalInfo: any, education: any, experience: any, skills: any, projects: any, certifications: any, lastUpdated: string): string => {
+  let latex = `\\documentclass[11pt, a4paper]{article}
+
+% Modern template with sidebar layout
+\\usepackage[left=1.5cm, top=1.5cm, right=6cm, bottom=1.5cm, footskip=1cm]{geometry}
+\\usepackage{titlesec}
+\\usepackage{tabularx}
+\\usepackage{array}
+\\usepackage[dvipsnames]{xcolor}
+\\definecolor{modernBlue}{RGB}{52, 152, 219}
+\\definecolor{darkGray}{RGB}{44, 62, 80}
+\\definecolor{lightGray}{RGB}{236, 240, 241}
+\\usepackage{enumitem}
+\\usepackage{fontawesome5}
+\\usepackage{amsmath}
+\\usepackage[colorlinks=true, urlcolor=modernBlue]{hyperref}
+\\usepackage[pscoord]{eso-pic}
+\\usepackage{calc}
+\\usepackage{tikz}
+\\usepackage{changepage}
+
+\\pagestyle{empty}
+\\setcounter{secnumdepth}{0}
+\\setlength{\\parindent}{0pt}
+
+% Modern section styling
+\\titleformat{\\section}{\\Large\\bfseries\\color{modernBlue}}{}{0pt}{}[\\vspace{2pt}\\color{modernBlue}\\hrule\\vspace{8pt}]
+
+% Custom sidebar
+\\newcommand{\\sidebar}{
+\\begin{tikzpicture}[remember picture,overlay]
+\\fill[lightGray] (current page.north east) rectangle +(-4.5cm,-\\paperheight);
+\\end{tikzpicture}
+}
+
+\\begin{document}
+\\sidebar
+
+% Main content area
+\\begin{minipage}[t]{0.6\\textwidth}
+\\vspace{1cm}
+
+% Header
+{\\Huge\\bfseries\\color{darkGray}${personalInfo.fullName}}\\\\[0.5cm]
+{\\Large\\color{modernBlue}Professional Resume}\\\\[1cm]`;
+
+  // Professional Summary
+  if (personalInfo.summary) {
+    const cleanSummary = personalInfo.summary
+      .replace(/&/g, '\\&')
+      .replace(/%/g, '\\%')
+      .replace(/#/g, '\\#')
+      .replace(/\n/g, '\\\\\\\\');
+    
+    latex += `
+\\section{Professional Summary}
+${cleanSummary}\\\\[0.5cm]`;
+  }
+
+  // Experience
+  const validExperience = experience.filter(exp => exp.company);
+  if (validExperience.length > 0) {
+    latex += `
+\\section{Professional Experience}`;
+    
+    validExperience.forEach((exp, index) => {
+      const position = exp.position.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const company = exp.company.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const dateRange = `${exp.startDate}${exp.current ? ' – Present' : exp.endDate ? ` – ${exp.endDate}` : ''}`;
+      
+      latex += `
+{\\large\\bfseries\\color{darkGray}${position}}\\\\
+{\\textit{${company}} \\hfill \\textit{${dateRange}}}\\\\[0.3cm]`;
+      
+      if (exp.description) {
+        const highlights = exp.description
+          .split('\n')
+          .filter(line => line.trim())
+          .map(line => `\\item ${line.trim().replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/#/g, '\\#')}`)
+          .join('\n');
+          
+        latex += `
+\\begin{itemize}[leftmargin=1cm]
+${highlights}
+\\end{itemize}\\\\[0.3cm]`;
+      }
+    });
+  }
+
+  // Projects
+  const validProjects = projects.filter(proj => proj.title);
+  if (validProjects.length > 0) {
+    latex += `
+\\section{Key Projects}`;
+    
+    validProjects.forEach((proj) => {
+      const title = proj.title.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      
+      latex += `
+{\\large\\bfseries\\color{darkGray}${title}}\\\\[0.2cm]`;
+      
+      if (proj.description) {
+        const cleanDesc = proj.description
+          .replace(/&/g, '\\&')
+          .replace(/%/g, '\\%')
+          .replace(/#/g, '\\#')
+          .replace(/\n/g, '\\\\\\\\');
+        latex += `${cleanDesc}\\\\[0.2cm]`;
+      }
+      
+      if (proj.technologies.some(t => t)) {
+        const techs = proj.technologies.filter(t => t.trim()).join(', ').replace(/&/g, '\\&').replace(/%/g, '\\%');
+        latex += `\\textbf{Technologies:} ${techs}\\\\[0.4cm]`;
+      }
+    });
+  }
+
+  latex += `
+\\end{minipage}
+\\hfill
+% Sidebar content
+\\begin{minipage}[t]{0.35\\textwidth}
+\\vspace{1.5cm}
+\\color{darkGray}`;
+
+  // Contact Info in sidebar
+  latex += `
+\\section*{\\color{white}\\faUser\\ Contact}
+\\color{white}`;
+
+  if (personalInfo.email) {
+    latex += `\\faEnvelope\\ ${personalInfo.email}\\\\[0.3cm]`;
+  }
+  if (personalInfo.phone) {
+    latex += `\\faPhone\\ ${personalInfo.phone}\\\\[0.3cm]`;
+  }
+  if (personalInfo.address) {
+    latex += `\\faMapMarker\\ ${personalInfo.address}\\\\[0.3cm]`;
+  }
+  if (personalInfo.linkedin) {
+    const cleanLinkedin = personalInfo.linkedin.replace(/^https?:\/\/(?:www\.)?linkedin\.com\/in\//, '');
+    latex += `\\faLinkedin\\ ${cleanLinkedin}\\\\[0.3cm]`;
+  }
+  if (personalInfo.github) {
+    const cleanGithub = personalInfo.github.replace(/^https?:\/\/(?:www\.)?github\.com\//, '');
+    latex += `\\faGithub\\ ${cleanGithub}\\\\[0.3cm]`;
+  }
+
+  // Skills in sidebar
+  const validSkills = skills.filter(skill => skill);
+  if (validSkills.length > 0) {
+    latex += `
+\\section*{\\color{white}\\faCogs\\ Skills}
+\\color{white}`;
+    validSkills.forEach(skill => {
+      latex += `• ${skill}\\\\[0.2cm]`;
+    });
+  }
+
+  // Education in sidebar
+  const validEducation = education.filter(edu => edu.institution);
+  if (validEducation.length > 0) {
+    latex += `
+\\section*{\\color{white}\\faGraduationCap\\ Education}
+\\color{white}`;
+    
+    validEducation.forEach((edu) => {
+      const institution = edu.institution.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const degree = edu.degree ? `${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}` : '';
+      const dateRange = edu.startDate && edu.endDate ? `${edu.startDate} – ${edu.endDate}` : '';
+      
+      latex += `\\textbf{${institution}}\\\\
+${degree}\\\\
+${dateRange}\\\\[0.4cm]`;
+    });
+  }
+
+  latex += `
+\\end{minipage}
+
+\\end{document}`;
+
+  return latex;
+};
+
+const generateCreativeTemplate = (formData: any, personalInfo: any, education: any, experience: any, skills: any, projects: any, certifications: any, lastUpdated: string): string => {
+  let latex = `\\documentclass[11pt, a4paper]{article}
+
+% Creative template with colorful design
+\\usepackage[margin=1.5cm]{geometry}
+\\usepackage{titlesec}
+\\usepackage{tabularx}
+\\usepackage{array}
+\\usepackage[dvipsnames]{xcolor}
+\\definecolor{creativeOrange}{RGB}{230, 126, 34}
+\\definecolor{creativePurple}{RGB}{155, 89, 182}
+\\definecolor{creativeGreen}{RGB}{46, 204, 113}
+\\definecolor{creativeDark}{RGB}{52, 73, 94}
+\\usepackage{enumitem}
+\\usepackage{fontawesome5}
+\\usepackage{amsmath}
+\\usepackage[colorlinks=true, urlcolor=creativeOrange]{hyperref}
+\\usepackage{tikz}
+\\usepackage{tcolorbox}
+
+\\pagestyle{empty}
+\\setcounter{secnumdepth}{0}
+\\setlength{\\parindent}{0pt}
+
+% Creative section styling
+\\titleformat{\\section}{\\Large\\bfseries\\color{creativeOrange}}{}{0pt}{}[\\vspace{5pt}]
+
+\\begin{document}
+
+% Creative header with background
+\\begin{tcolorbox}[colback=creativeDark, colframe=creativeDark, text=white, arc=5pt]
+\\centering
+{\\Huge\\bfseries ${personalInfo.fullName}}\\\\[0.3cm]
+{\\Large Creative Professional}\\\\[0.2cm]`;
+
+  // Contact info in header
+  const contactItems = [];
+  if (personalInfo.email) contactItems.push(`\\faEnvelope\\ ${personalInfo.email}`);
+  if (personalInfo.phone) contactItems.push(`\\faPhone\\ ${personalInfo.phone}`);
+  if (personalInfo.linkedin) {
+    const cleanLinkedin = personalInfo.linkedin.replace(/^https?:\/\/(?:www\.)?linkedin\.com\/in\//, '');
+    contactItems.push(`\\faLinkedin\\ ${cleanLinkedin}`);
+  }
+  
+  latex += contactItems.join(' \\quad ');
+  latex += `
+\\end{tcolorbox}
+
+\\vspace{0.5cm}`;
+
+  // Two column layout
+  latex += `
+\\begin{minipage}[t]{0.65\\textwidth}`;
+
+  // Professional Summary
+  if (personalInfo.summary) {
+    const cleanSummary = personalInfo.summary
+      .replace(/&/g, '\\&')
+      .replace(/%/g, '\\%')
+      .replace(/#/g, '\\#')
+      .replace(/\n/g, '\\\\\\\\');
+    
+    latex += `
+\\section{\\faUser\\ About Me}
+\\begin{tcolorbox}[colback=creativeOrange!10, colframe=creativeOrange, arc=3pt]
+${cleanSummary}
+\\end{tcolorbox}`;
+  }
+
+  // Experience with creative styling
+  const validExperience = experience.filter(exp => exp.company);
+  if (validExperience.length > 0) {
+    latex += `
+\\section{\\faBriefcase\\ Experience}`;
+    
+    validExperience.forEach((exp, index) => {
+      const position = exp.position.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const company = exp.company.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const dateRange = `${exp.startDate}${exp.current ? ' – Present' : exp.endDate ? ` – ${exp.endDate}` : ''}`;
+      
+      latex += `
+\\begin{tcolorbox}[colback=creativePurple!10, colframe=creativePurple, arc=3pt]
+{\\large\\bfseries\\color{creativeDark}${position}}\\\\
+\\textit{${company}} \\hfill \\textbf{${dateRange}}`;
+      
+      if (exp.description) {
+        const highlights = exp.description
+          .split('\n')
+          .filter(line => line.trim())
+          .map(line => `\\item ${line.trim().replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/#/g, '\\#')}`)
+          .join('\n');
+          
+        latex += `
+\\begin{itemize}[leftmargin=0.5cm]
+${highlights}
+\\end{itemize}`;
+      }
+      
+      latex += `
+\\end{tcolorbox}\\\\[0.3cm]`;
+    });
+  }
+
+  // Projects
+  const validProjects = projects.filter(proj => proj.title);
+  if (validProjects.length > 0) {
+    latex += `
+\\section{\\faRocket\\ Projects}`;
+    
+    validProjects.forEach((proj) => {
+      const title = proj.title.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      
+      latex += `
+\\begin{tcolorbox}[colback=creativeGreen!10, colframe=creativeGreen, arc=3pt]
+{\\large\\bfseries\\color{creativeDark}${title}}`;
+      
+      if (proj.description) {
+        const cleanDesc = proj.description
+          .replace(/&/g, '\\&')
+          .replace(/%/g, '\\%')
+          .replace(/#/g, '\\#')
+          .replace(/\n/g, '\\\\\\\\');
+        latex += `\\\\[0.2cm]${cleanDesc}`;
+      }
+      
+      if (proj.technologies.some(t => t)) {
+        const techs = proj.technologies.filter(t => t.trim()).join(', ').replace(/&/g, '\\&').replace(/%/g, '\\%');
+        latex += `\\\\[0.2cm]\\textbf{\\color{creativeGreen}Tech Stack:} ${techs}`;
+      }
+      
+      latex += `
+\\end{tcolorbox}\\\\[0.3cm]`;
+    });
+  }
+
+  latex += `
+\\end{minipage}
+\\hfill
+\\begin{minipage}[t]{0.3\\textwidth}`;
+
+  // Skills with progress bars
+  const validSkills = skills.filter(skill => skill);
+  if (validSkills.length > 0) {
+    latex += `
+\\section{\\faCogs\\ Skills}`;
+    validSkills.forEach(skill => {
+      latex += `
+\\begin{tcolorbox}[colback=creativeOrange!20, colframe=creativeOrange, arc=2pt, height=0.8cm]
+\\centering\\textbf{${skill}}
+\\end{tcolorbox}\\\\[0.2cm]`;
+    });
+  }
+
+  // Education
+  const validEducation = education.filter(edu => edu.institution);
+  if (validEducation.length > 0) {
+    latex += `
+\\section{\\faGraduationCap\\ Education}`;
+    
+    validEducation.forEach((edu) => {
+      const institution = edu.institution.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const degree = edu.degree ? `${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}` : '';
+      const dateRange = edu.startDate && edu.endDate ? `${edu.startDate} – ${edu.endDate}` : '';
+      
+      latex += `
+\\begin{tcolorbox}[colback=creativePurple!20, colframe=creativePurple, arc=2pt]
+\\textbf{${institution}}\\\\
+\\textit{${degree}}\\\\
+\\small ${dateRange}
+\\end{tcolorbox}\\\\[0.3cm]`;
+    });
+  }
+
+  // Certifications
+  const validCertifications = certifications.filter(cert => cert.name);
+  if (validCertifications.length > 0) {
+    latex += `
+\\section{\\faCertificate\\ Certifications}`;
+    
+    validCertifications.forEach((cert) => {
+      const name = cert.name.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      const issuer = cert.issuer.replace(/&/g, '\\&').replace(/%/g, '\\%');
+      
+      latex += `
+\\begin{tcolorbox}[colback=creativeGreen!20, colframe=creativeGreen, arc=2pt]
+\\textbf{${name}}\\\\
+\\textit{${issuer}}\\\\
+\\small ${cert.date}
+\\end{tcolorbox}\\\\[0.2cm]`;
+    });
+  }
+
+  latex += `
+\\end{minipage}
 
 \\end{document}`;
 
