@@ -287,10 +287,12 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
   
   // Load data from Supabase when available
   useEffect(() => {
-    const supabaseData = getFormData();
-    if (supabaseData) {
-      setFormData(supabaseData);
-    } else {
+    if (!resumeLoading && resume) {
+      const supabaseData = getFormData();
+      if (supabaseData) {
+        setFormData(supabaseData);
+      }
+    } else if (!resumeLoading && !resume) {
       // Fallback to localStorage for backwards compatibility
       const savedResume = localStorage.getItem('savedResume');
       if (savedResume) {
@@ -304,7 +306,7 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
         }
       }
     }
-  }, [templateId, getFormData]);
+  }, [templateId, resumeLoading, resume]);
 
   // Auto-save to Supabase when form data changes
   useEffect(() => {

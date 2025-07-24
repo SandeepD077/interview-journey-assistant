@@ -32,9 +32,9 @@ interface ResumeData {
   }>;
   skills: string[];
   projects: Array<{
-    name: string;
+    title: string;
     description: string;
-    technologies: string;
+    technologies: string[];
     link?: string;
   }>;
   certifications?: Array<{
@@ -203,7 +203,7 @@ export const generateResumePDF = (templateId: string, formData: any): Promise<Bl
       formData.projects.forEach((project: any) => {
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text(project.name, margin, currentY);
+        doc.text(project.title, margin, currentY);
         currentY += 6;
 
         doc.setFontSize(10);
@@ -212,7 +212,7 @@ export const generateResumePDF = (templateId: string, formData: any): Promise<Bl
         currentY += 4;
 
         doc.setFont('helvetica', 'italic');
-        currentY = addText(`Technologies: ${project.technologies}`, margin, currentY, pageWidth - 2 * margin);
+        currentY = addText(`Technologies: ${project.technologies.join(', ')}`, margin, currentY, pageWidth - 2 * margin);
         
         if (project.link) {
           doc.setFont('helvetica', 'normal');
