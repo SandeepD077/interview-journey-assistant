@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { defaultResumeData, ResumeFormData, resumeTemplates } from "@/data/resumeTemplates";
 import { analyzeResume } from "@/services/geminiService";
@@ -308,16 +308,40 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
     }
   }, [templateId, resumeLoading, resume]);
 
-  // Auto-save to Supabase when form data changes
-  useEffect(() => {
-    if (!resumeLoading && formData !== defaultResumeData) {
-      const autoSaveTimer = setTimeout(() => {
-        handleSaveResume();
-      }, 2000); // Auto-save after 2 seconds of inactivity
-
-      return () => clearTimeout(autoSaveTimer);
+  // Auto-save to Supabase when form data changes (with proper debouncing)
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasChangesRef = useRef(false);
+  
+  const debouncedAutoSave = useCallback(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
     }
-  }, [formData, resumeLoading]);
+    
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      if (hasChangesRef.current && !resumeLoading) {
+        handleSaveResume();
+        hasChangesRef.current = false;
+      }
+    }, 3000); // Auto-save after 3 seconds of inactivity
+  }, [resumeLoading]);
+
+  useEffect(() => {
+    // Only trigger auto-save if form data has actually changed
+    const isDefaultData = JSON.stringify(formData) === JSON.stringify(defaultResumeData);
+    const initialData = getFormData();
+    const hasInitialData = initialData && JSON.stringify(formData) !== JSON.stringify(initialData);
+    
+    if (!isDefaultData && (hasInitialData || !initialData)) {
+      hasChangesRef.current = true;
+      debouncedAutoSave();
+    }
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData, debouncedAutoSave]);
 
   return (
     <DashboardLayout>
