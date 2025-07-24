@@ -285,14 +285,15 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
     }
   };
   
-  // Load data from Supabase when available
+  // Load data from Supabase when available (only once)
   useEffect(() => {
     if (!resumeLoading && resume) {
       const supabaseData = getFormData();
-      if (supabaseData) {
+      if (supabaseData && JSON.stringify(formData) === JSON.stringify(defaultResumeData)) {
+        // Only load if form is still default data
         setFormData(supabaseData);
       }
-    } else if (!resumeLoading && !resume) {
+    } else if (!resumeLoading && !resume && JSON.stringify(formData) === JSON.stringify(defaultResumeData)) {
       // Fallback to localStorage for backwards compatibility
       const savedResume = localStorage.getItem('savedResume');
       if (savedResume) {
@@ -308,40 +309,12 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
     }
   }, [templateId, resumeLoading, resume]);
 
-  // Auto-save to Supabase when form data changes (with proper debouncing)
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hasChangesRef = useRef(false);
-  
-  const debouncedAutoSave = useCallback(() => {
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current);
-    }
-    
-    autoSaveTimeoutRef.current = setTimeout(() => {
-      if (hasChangesRef.current && !resumeLoading) {
-        handleSaveResume();
-        hasChangesRef.current = false;
-      }
-    }, 3000); // Auto-save after 3 seconds of inactivity
-  }, [resumeLoading]);
-
+  // Save form data to localStorage for backup (no auto-save to Supabase)
   useEffect(() => {
-    // Only trigger auto-save if form data has actually changed
-    const isDefaultData = JSON.stringify(formData) === JSON.stringify(defaultResumeData);
-    const initialData = getFormData();
-    const hasInitialData = initialData && JSON.stringify(formData) !== JSON.stringify(initialData);
-    
-    if (!isDefaultData && (hasInitialData || !initialData)) {
-      hasChangesRef.current = true;
-      debouncedAutoSave();
+    if (JSON.stringify(formData) !== JSON.stringify(defaultResumeData)) {
+      localStorage.setItem('savedResume', JSON.stringify({ templateId, formData }));
     }
-
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, [formData, debouncedAutoSave]);
+  }, [formData, templateId]);
 
   return (
     <DashboardLayout>
