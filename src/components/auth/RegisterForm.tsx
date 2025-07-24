@@ -79,11 +79,21 @@ export function RegisterForm() {
         userType === "organization" ? organizationName : undefined
       );
       
-      toast.success("Account created successfully!");
-      navigate(userType === "user" ? "/dashboard" : "/organization-dashboard");
-    } catch (error) {
+      toast.success("Account created successfully! Please check your email to confirm your account.");
+      // Don't navigate immediately - let user confirm email first
+    } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error("Something went wrong. Please try again.");
+      
+      // Handle specific Supabase auth errors
+      if (error?.message?.includes('User already registered')) {
+        toast.error("An account with this email already exists. Please try logging in instead.");
+      } else if (error?.message?.includes('Invalid email')) {
+        toast.error("Please enter a valid email address.");
+      } else if (error?.message?.includes('Password should be at least 6 characters')) {
+        toast.error("Password must be at least 6 characters long.");
+      } else {
+        toast.error(`Registration failed: ${error?.message || 'Please try again.'}`);
+      }
     } finally {
       setIsLoading(false);
     }
