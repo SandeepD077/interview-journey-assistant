@@ -36,6 +36,7 @@ export default function ResumeBuilder() {
   const [selectedTemplateId, setSelectedTemplateId] = useState(templateId || 'modern');
   const [loading, setLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showTemplateSelection, setShowTemplateSelection] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<{
     score: number;
     suggestions: string[];
@@ -323,13 +324,8 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
           description="Create and customize your professional resume"
         />
         
-        {/* Template Selector */}
-        <TemplateSelector 
-          selectedTemplate={selectedTemplateId}
-          onTemplateSelect={setSelectedTemplateId}
-        />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {!showTemplateSelection ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="col-span-2">
             <Card>
               <CardHeader>
@@ -891,15 +887,8 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
                   )}
                 </Button>
                 
-                <Button onClick={generatePDF} disabled={loading}>
-                  {loading ? (
-                    <>Generating...</>
-                  ) : (
-                    <>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download PDF
-                    </>
-                  )}
+                <Button onClick={() => setShowTemplateSelection(true)}>
+                  Choose Resume Style
                 </Button>
               </CardFooter>
             </Card>
@@ -998,6 +987,81 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
             </div>
           </div>
         </div>
+        ) : (
+          /* Template Selection View */
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Choose Resume Style</h2>
+                <p className="text-muted-foreground">
+                  Select a professional template for your resume
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowTemplateSelection(false)}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Form
+              </Button>
+            </div>
+            
+            <TemplateSelector 
+              selectedTemplate={selectedTemplateId}
+              onTemplateSelect={setSelectedTemplateId}
+            />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Selected Template: {selectedTemplate.name}</CardTitle>
+                  <CardDescription>
+                    {selectedTemplate.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Template Style:</span>
+                      <span className="text-muted-foreground">{selectedTemplate.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Best For:</span>
+                      <span className="text-muted-foreground">
+                        {selectedTemplate.id === 'modern' && 'Tech & Creative Roles'}
+                        {selectedTemplate.id === 'professional' && 'Corporate & Traditional Roles'}
+                        {selectedTemplate.id === 'creative' && 'Design & Marketing Roles'}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={generatePDF} 
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    {loading ? (
+                      <>Generating PDF...</>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Resume PDF
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <ResumePreview 
+                formData={formData}
+                templateId={selectedTemplateId}
+                onDownload={generatePDF}
+                loading={loading}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
