@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { defaultResumeData, ResumeFormData, resumeTemplates } from "@/data/resumeTemplates";
 import { analyzeResume } from "@/services/geminiService";
 import { useResume } from "@/hooks/useResume";
+import { TemplateSelector } from "@/components/resume/TemplateSelector";
+import { ResumePreview } from "@/components/resume/ResumePreview";
 import { 
   PlusCircle, 
   MinusCircle, 
@@ -31,6 +33,7 @@ export default function ResumeBuilder() {
   const { currentUser } = useAuth();
   const { templateId } = useParams();
   const [formData, setFormData] = useState<ResumeFormData>(defaultResumeData);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(templateId || 'modern');
   const [loading, setLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<{
@@ -39,8 +42,8 @@ export default function ResumeBuilder() {
     analysis: string;
   } | null>(null);
   
-  const { resume, loading: resumeLoading, saving: isSaving, saveResume, getFormData } = useResume(templateId || '');
-  const selectedTemplate = resumeTemplates.find(t => t.id === templateId);
+  const { resume, loading: resumeLoading, saving: isSaving, saveResume, getFormData } = useResume(selectedTemplateId);
+  const selectedTemplate = resumeTemplates.find(t => t.id === selectedTemplateId) || resumeTemplates[0];
   
   if (!currentUser) {
     return <Navigate to="/login" replace />;
@@ -48,10 +51,6 @@ export default function ResumeBuilder() {
   
   if (currentUser.role !== "user") {
     return <Navigate to="/organization-dashboard" replace />;
-  }
-  
-  if (!selectedTemplate) {
-    return <Navigate to="/resume-builder" replace />;
   }
   
   // Update a specific field in a nested object
@@ -204,7 +203,7 @@ export default function ResumeBuilder() {
     setLoading(true);
     
     try {
-      const pdfBlob = await generateResumePDF(templateId || "", formData);
+      const pdfBlob = await generateResumePDF(selectedTemplateId, formData);
       
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
@@ -299,7 +298,7 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
       if (savedResume) {
         try {
           const { templateId: savedTemplateId, formData: savedFormData } = JSON.parse(savedResume);
-          if (savedTemplateId === templateId) {
+          if (savedTemplateId === selectedTemplateId) {
             setFormData(savedFormData);
           }
         } catch (error) {
@@ -307,57 +306,28 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
         }
       }
     }
-  }, [templateId, resumeLoading, resume]);
+  }, [selectedTemplateId, resumeLoading, resume]);
 
   // Save form data to localStorage for backup (no auto-save to Supabase)
   useEffect(() => {
     if (JSON.stringify(formData) !== JSON.stringify(defaultResumeData)) {
-      localStorage.setItem('savedResume', JSON.stringify({ templateId, formData }));
+      localStorage.setItem('savedResume', JSON.stringify({ templateId: selectedTemplateId, formData }));
     }
-  }, [formData, templateId]);
+  }, [formData, selectedTemplateId]);
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Link to="/resume-builder">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <Heading 
-                title="Resume Builder" 
-                description={`Building ${selectedTemplate.name} template`}
-              />
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleSaveResume} disabled={isSaving}>
-              {isSaving ? (
-                <>Saving...</>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save
-                </>
-              )}
-            </Button>
-            
-            <Button onClick={generatePDF} disabled={loading}>
-              {loading ? (
-                <>Generating...</>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download PDF
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+        <Heading 
+          title="Resume Builder" 
+          description="Create and customize your professional resume"
+        />
+        
+        {/* Template Selector */}
+        <TemplateSelector 
+          selectedTemplate={selectedTemplateId}
+          onTemplateSelect={setSelectedTemplateId}
+        />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="col-span-2">
@@ -937,101 +907,12 @@ ${cert.expiration ? `Expires: ${cert.expiration}` : ''}
           
           <div className="col-span-1">
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resume Preview</CardTitle>
-                  <CardDescription>
-                    How your resume will look like
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-center">
-                  <div className="relative w-full aspect-[3/4] border rounded-md overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-50 flex flex-col">
-                      {formData.personalInfo.fullName ? (
-                        <div className="bg-primary text-white p-4 text-center">
-                          <h2 className="text-xl font-bold">{formData.personalInfo.fullName}</h2>
-                          <div className="text-sm mt-1 flex items-center justify-center flex-wrap gap-3">
-                            {formData.personalInfo.email && (
-                              <span>{formData.personalInfo.email}</span>
-                            )}
-                            {formData.personalInfo.phone && (
-                              <span>{formData.personalInfo.phone}</span>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="bg-primary/20 p-4 text-center">
-                          <div className="h-6 bg-gray-200 rounded-md w-1/2 mx-auto"></div>
-                          <div className="h-4 bg-gray-200 rounded-md w-3/4 mx-auto mt-2"></div>
-                        </div>
-                      )}
-                      
-                      <div className="p-4 flex-1">
-                        <div className="space-y-4">
-                          {!formData.personalInfo.fullName && (
-                            <>
-                              <div className="h-4 bg-gray-200 rounded-md w-1/4"></div>
-                              <div className="h-3 bg-gray-200 rounded-md w-full"></div>
-                              <div className="h-3 bg-gray-200 rounded-md w-full"></div>
-                              <div className="h-3 bg-gray-200 rounded-md w-3/4"></div>
-                              
-                              <div className="h-4 bg-gray-200 rounded-md w-1/4 mt-6"></div>
-                              <div className="h-3 bg-gray-200 rounded-md w-full"></div>
-                              <div className="h-3 bg-gray-200 rounded-md w-full"></div>
-                              
-                              <div className="h-4 bg-gray-200 rounded-md w-1/4 mt-6"></div>
-                              <div className="h-3 bg-gray-200 rounded-md w-full"></div>
-                              <div className="h-3 bg-gray-200 rounded-md w-full"></div>
-                            </>
-                          )}
-                          
-                          {formData.personalInfo.fullName && (
-                            <div className="text-sm space-y-3 opacity-60">
-                              <p className="italic">
-                                Enter your details in the form to see a preview of your resume.
-                                Download the final PDF to see the complete formatted resume.
-                              </p>
-                              
-                              {formData.personalInfo.summary && (
-                                <>
-                                  <h3 className="font-semibold text-base">SUMMARY</h3>
-                                  <p>{formData.personalInfo.summary.substring(0, 100)}...</p>
-                                </>
-                              )}
-                              
-                              {formData.experience.some(e => e.company) && (
-                                <>
-                                  <h3 className="font-semibold text-base">EXPERIENCE</h3>
-                                  <div>
-                                    {formData.experience[0].company && (
-                                      <p>
-                                        {formData.experience[0].position} at {formData.experience[0].company}
-                                      </p>
-                                    )}
-                                  </div>
-                                </>
-                              )}
-                              
-                              {formData.education.some(e => e.institution) && (
-                                <>
-                                  <h3 className="font-semibold text-base">EDUCATION</h3>
-                                  <div>
-                                    {formData.education[0].institution && (
-                                      <p>
-                                        {formData.education[0].degree} in {formData.education[0].fieldOfStudy}
-                                      </p>
-                                    )}
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <ResumePreview 
+                formData={formData}
+                templateId={selectedTemplateId}
+                onDownload={generatePDF}
+                loading={loading}
+              />
               
               <Card>
                 <CardHeader>
