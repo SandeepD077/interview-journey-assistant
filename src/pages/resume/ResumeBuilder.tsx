@@ -33,7 +33,7 @@ export default function ResumeBuilder() {
   const { currentUser } = useAuth();
   const { templateId } = useParams();
   const [formData, setFormData] = useState<ResumeFormData>(defaultResumeData);
-  const [selectedTemplateId, setSelectedTemplateId] = useState(templateId || 'modern');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('modern');
   const [loading, setLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showTemplateSelection, setShowTemplateSelection] = useState(false);
